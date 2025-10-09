@@ -1,0 +1,76 @@
+workspace "StrideProject"
+    architecture "x64"
+    configurations { "Debug", "Release", "Dist" }
+
+
+outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
+
+includeDirs={}
+includeDirs["glfw"]="packages/glfw/include"
+includeDirs["SpdLog"]="packages/spdlog/include"
+includeDirs["ImGui"]="packages/imgui"
+includeDirs["LunaSVG"]="packages/lunasvg/include"
+includeDirs["nlohmann"]="packages/nlohmann/include"
+includeDirs["ImAnim"]="packages/ImAnim/src"
+
+include "packages/glfw"
+include "packages/imgui"
+include "packages/lunasvg"
+include "packages/ImAnim"
+
+project "Stride"
+    kind "ConsoleApp"
+    language "C++"
+    cppdialect "C++17"
+    targetdir "bin"
+    objdir "bin/obj"
+    pchheader "pch.h"
+    pchsource "src/pch.cpp"
+    staticruntime "On"
+
+    links {
+        "glfw","ImGui","opengl32","LunaSVG","dwmapi","Shlwapi","winmm","ImAnim"
+    }
+
+    includedirs{
+        "src",
+        "src/external",
+        "%{includeDirs.glfw}",
+        "%{includeDirs.ImGui}",
+        "%{includeDirs.LunaSVG}",
+        "%{includeDirs.SpdLog}",
+        "%{includeDirs.nlohmann}",
+        "%{includeDirs.ImAnim}"
+    }
+
+    files { 
+        "src/**.cpp"
+    }
+
+
+    filter "system:windows"
+        systemversion "latest"
+
+    filter "configurations:Debug"
+        runtime "Debug"
+        symbols "On"
+        optimize "Off"
+        buildoptions { "/MP","/DEBUG:FULL","/utf-8" }
+        defines {"GL_DEBUG"}
+
+    filter {"configurations:Release"}
+        runtime "Release"
+        optimize "On"
+        symbols "Off"
+        characterset ("MBCS")
+        buildoptions { "/MP","/utf-8" }
+        defines {"GL_DEBUG","_CRT_SECURE_NO_WARNINGS"}
+
+    filter "configurations:Dist"
+        kind "WindowedApp"
+        runtime "Release"
+        optimize "On"
+        symbols "Off"
+        characterset ("MBCS")
+        buildoptions { "/MP","/utf-8"}
+        linkoptions {"/ENTRY:mainCRTStartup"}

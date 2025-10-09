@@ -8,6 +8,7 @@ struct Card
 {
     std::string title;
     std::string description;
+    std::vector<std::string> badges;
 };
 
 struct DragDropPayload
@@ -53,13 +54,49 @@ class DragDropManager
 
   private:
     DragDropManager() = default;
-    std::vector<Card> mWindowACards
-        = { { "Card A1", "This is the first card in list A. It has some descriptive text." },
-            { "Card A2", "This is the second card, demonstrating the layout." },
-            { "Card A3", "The last card in the initial set for window A." } };
-    std::vector<Card> mWindowBCards
-        = { { "Card B1", "This card belongs to the second window, window B." },
-            { "Card B2", "Drag and drop me to another list or reorder me!" } };
+    std::vector<Card> mWindowACards = {
+        { "Card A1",
+          "This is a longer card description meant to test text wrapping inside the card layout. "
+          "It should correctly wrap and not overflow beyond the card boundary. Make sure to check "
+          "alignment.",
+          { "UI", "Feature", "High Priority", "In Progress" } },
+        { "Card A2", "Short description for testing minimal content rendering.", { "Bug", "Low" } },
+        { "Card A3",
+          "This card has no badges and helps ensure layout spacing remains consistent.",
+          {} },
+        { "Card A4",
+          "Card with many badges to test line breaks within the badge layout area.",
+          { "Backend", "Refactor", "Urgent", "Core", "Stable", "Code Review", "V2.1" } },
+        { "Card A5",
+          "Multiline\nText\nCheck — this description explicitly uses line breaks to verify "
+          "rendering behavior.",
+          { "Testing", "Formatting" } }
+    };
+
+    std::vector<Card> mWindowBCards = {
+        { "Card B1",
+          "This card belongs to window B. It should be draggable to window A and maintain state.",
+          { "UX", "Design" } },
+        { "Card B2",
+          "A long description to simulate overflow behavior. If dragging multiple times, ensure "
+          "the visual "
+          "feedback stays correct and data structures remain consistent.",
+          { "Drag", "Drop", "Review", "Feature" } },
+        { "Card B3",
+          "Stress test with emoji 🚀🔥💡 and UTF-8 characters to ensure proper rendering and "
+          "encoding handling.",
+          { "Unicode", "Emoji", "Test" } },
+        { "Card B4", "Card with minimal description.", { "Minor", "Note" } },
+        { "Card B5",
+          "Empty badges list to confirm rendering spacing below description still looks good.",
+          {} },
+        { "Card B5 No Description",
+          "",
+          {} },
+        { "Card B5 No Description",
+          "",
+          {"Unicode","Emoji","Test"} }
+    };
 
     DragOperation mDragOperation;
     DragDropPayload mPayload;

@@ -1,13 +1,28 @@
 #include "pch.h"
 #include "managers/DragDropManager.h"
+#include <vector>
 #include "imgui.h"
 #include "imgui_internal.h"
+#include "BadgeColors.h"
 
+ImU32 GetBadgeColor(const std::string& text)
+{
+    unsigned hash = std::hash<std::string>{}(text);
+    float hue = (hash % 256) / 256.0f;
+    ImVec4 col = ImGui::ColorConvertU32ToFloat4(ImGui::GetColorU32(ImGuiCol_Button));
+    ImVec4 hsv;
+    ImGui::ColorConvertRGBtoHSV(col.x, col.y, col.z, hsv.x, hsv.y, hsv.z);
+    hsv.x = hue;
+    ImVec4 rgb(1.0, 1.0, 1.0, 1.0);
+    ImGui::ColorConvertHSVtoRGB(hsv.x, hsv.y, hsv.z, rgb.x, rgb.y, rgb.z);
+    return ImGui::GetColorU32(rgb);
+}
 
 void RenderCardManual(
     const char* unique_id,
     const char* title,
     const char* description,
+    const std::vector<std::string>& badges,
     bool& out_is_hovered
 )
 {
@@ -19,8 +34,56 @@ void RenderCardManual(
 
     const ImGuiID id = window->GetID(unique_id);
     const ImVec2 pos = window->DC.CursorPos;
-    const float card_height = 120.0f;
+
+    const float padding = 15.0f;
+    const float badge_padding = 5.0f;
+    const float badge_height = 20.0f;
+    const float badge_spacing = 5.0f;
     const float card_width = std::max(250.0f, ImGui::GetContentRegionAvail().x);
+
+    ImVec2 title_size = ImGui::CalcTextSize(title, nullptr, true, card_width - (padding * 2.0f));
+    float title_height = title_size.y;
+    ImVec2 description_size
+        = ImGui::CalcTextSize(description, nullptr, true, card_width - (padding * 2.0f));
+
+
+    float separator_height = 1.0f + style.ItemSpacing.y * 2.0f;
+
+    float badge_row_width = 0.0f;
+    float badge_total_height = badge_height;
+
+    for(const std::string& badge : badges)
+    {
+        ImVec2 badge_size = ImGui::CalcTextSize(badge.c_str());
+        badge_size.x += badge_padding * 2;
+        if(badge_row_width + badge_size.x > card_width - (padding * 2.0f))
+        {
+            badge_total_height += badge_height + badge_spacing;
+            badge_row_width = badge_size.x;
+        }
+        else
+        {
+            badge_row_width += badge_size.x + badge_spacing;
+        }
+    }
+
+    float card_height = padding + title_height;
+
+    const bool hasDescription = description && strlen(description) > 0;
+    if(hasDescription)
+    {
+        card_height += separator_height;
+        card_height += description_size.y + padding * 0.5f;
+    }
+
+    // Add badges if present
+    if(!badges.empty())
+    {
+        card_height += badge_total_height + padding * 0.5f;
+    }
+
+    // Add bottom padding
+    card_height += padding;
     const ImVec2 card_size(card_width, card_height);
     const ImRect bb(pos, ImVec2(pos.x + card_size.x, pos.y + card_size.y));
 
@@ -33,17 +96,18 @@ void RenderCardManual(
 
     ImU32 bg_color = out_is_hovered ? IM_COL32(50, 50, 55, 255) : IM_COL32(40, 40, 45, 255);
     ImU32 border_color = IM_COL32(80, 80, 80, 255);
+    if(out_is_hovered)
+        border_color = IM_COL32(120, 150, 255, 255);
 
     window->DrawList->AddRectFilled(bb.Min, bb.Max, bg_color, 5.0f); // Background
     window->DrawList->AddRect(bb.Min, bb.Max, border_color, 5.0f);   // Border
 
     // --- 5. Content Layout & Rendering ---
-    const float padding = 15.0f;
     ImVec2 text_pos = ImVec2(bb.Min.x + padding, bb.Min.y + padding);
 
     // Title
-    ImGui::RenderText(text_pos, title);
-    text_pos.y += ImGui::GetTextLineHeight();
+    ImGui::RenderTextWrapped(text_pos, title, nullptr, card_width - (padding * 2.0f));
+    text_pos.y += title_height;
 
     // Separator
     window->DrawList->AddLine(
@@ -52,11 +116,46 @@ void RenderCardManual(
         border_color,
         1.0f
     );
-    text_pos.y += style.ItemSpacing.y * 2;
+    text_pos.y += separator_height;
 
-    // Description (with clipping and wrapping)
-    // ImVec2 text_size = ImGui::CalcTextSize(description, NULL, true, card_width - (padding * 2));
-    ImGui::RenderTextWrapped(text_pos, description, NULL, card_width - (padding * 2));
+    if(hasDescription){
+        ImGui::RenderTextWrapped(text_pos, description, NULL, card_width - (padding * 2));
+        text_pos.y += description_size.y;
+        text_pos.y += padding * 0.5f;
+    }
+
+    ImVec2 badge_pos = text_pos;
+
+    for(const std::string& badge : badges)
+    {
+        BadgeColors::BadgeStyle badgeColor = BadgeColors::Get("indigo");
+        ImVec2 badge_size = ImGui::CalcTextSize(badge.c_str());
+        badge_size.x += (badge_padding * 2);
+
+        if(badge_pos.x + badge_size.x > bb.Max.x - padding)
+        {
+            badge_pos.x = bb.Min.x + padding;
+            badge_pos.y += badge_height + badge_spacing;
+        }
+
+        window->DrawList->AddRectFilled(
+            badge_pos,
+            { badge_pos.x + badge_size.x, badge_pos.y + badge_height },
+            badgeColor.text,
+            2.0f
+        );
+
+        ImVec2 text_center = ImVec2(
+            badge_pos.x + badge_padding,
+            badge_pos.y + (badge_height - badge_size.y) * 0.5f
+        );
+
+        ImGui::PushStyleColor(ImGuiCol_Text, badgeColor.bg);
+        ImGui::RenderText(text_center, badge.c_str());
+        ImGui::PopStyleColor();
+
+        badge_pos.x += badge_size.x + badge_spacing;
+    }
 }
 
 void DragDropManager::DrawCardList(const char* title, int list_id, std::vector<Card>& cards)
@@ -76,7 +175,7 @@ void DragDropManager::DrawCardList(const char* title, int list_id, std::vector<C
     {
         std::string dropzone_id
             = std::string("dropzone_") + std::to_string(list_id) + "_" + std::to_string(i);
-        ImGui::InvisibleButton(dropzone_id.c_str(), ImVec2(ImGui::GetContentRegionAvail().x, 8));
+        ImGui::InvisibleButton(dropzone_id.c_str(), ImVec2(ImGui::GetContentRegionAvail().x, 4));
         ImRect zone_rect(ImGui::GetItemRectMin(), ImGui::GetItemRectMax());
         aDropZones.push_back({ zone_rect, list_id, (int)i });
 
@@ -93,10 +192,13 @@ void DragDropManager::DrawCardList(const char* title, int list_id, std::vector<C
         std::string card_id
             = std::string("card_") + std::to_string(list_id) + "_" + std::to_string(i);
         bool isHovered = false;
+        // float x_center = (ImGui::GetWindowWidth() - ImGui::GetContentRegionAvail().x) * 0.5f;
+        // ImGui::SetCursorPosX(ImGui::GetCursorPosX() + x_center);
         RenderCardManual(
             card_id.c_str(),
             cards[i].title.c_str(),
             cards[i].description.c_str(),
+            cards[i].badges,
             isHovered
         );
 
@@ -114,6 +216,7 @@ void DragDropManager::DrawCardList(const char* title, int list_id, std::vector<C
                 preview_id.c_str(),
                 cards[i].title.c_str(),
                 cards[i].description.c_str(),
+                cards[i].badges,
                 isHovered
             );
 
@@ -122,7 +225,7 @@ void DragDropManager::DrawCardList(const char* title, int list_id, std::vector<C
     }
 
     std::string drop_end_id = std::string("dropzone_end_") + std::to_string(list_id);
-    ImGui::InvisibleButton(drop_end_id.c_str(), ImGui::GetContentRegionAvail());
+    ImGui::InvisibleButton(drop_end_id.c_str(), { ImGui::GetContentRegionAvail().x, 4.0f });
     ImRect end_rect(ImGui::GetItemRectMin(), ImGui::GetItemRectMax());
     aDropZones.push_back({ end_rect, list_id, (int)cards.size() });
 

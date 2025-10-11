@@ -90,17 +90,16 @@ class DragDropManager
         { "Card B5",
           "Empty badges list to confirm rendering spacing below description still looks good.",
           {} },
-        { "Card B5 No Description",
-          "",
-          {} },
-        { "Card B5 No Description",
-          "",
-          {"Unicode","Emoji","Test"} }
+        { "Card B5 No Description", "", {} },
+        { "Card B5 No Description", "", { "Unicode", "Emoji", "Test" } }
     };
 
     DragOperation mDragOperation;
     DragDropPayload mPayload;
     std::vector<Dropzone> mDropZones;
+    Dropzone* mCurrentDropZonePtr = nullptr;
 
-    static void DrawCardList(const char* title, int list_id, std::vector<Card>& cards);
+    static void CardList(const char* title, int list_id, std::vector<Card>& cards);
+    static void PerformDropOperation();
+    static void DrawTooltipOfDraggedItem();
 };

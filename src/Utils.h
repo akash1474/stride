@@ -10,6 +10,7 @@
 #include "userenv.h"
 #include <commdlg.h>
 #include "Types.h"
+#include <random>
 
 inline ImColor darkerShade(ImVec4 color, float multiplier = 0.1428)
 {
@@ -28,6 +29,21 @@ inline ImColor lighterShade(ImVec4 color, float factor = 0.1428)
     color.z += ((1.0f - color.z) * factor);
     return color;
 }
+
+inline std::string genUID(int length = 16)
+{
+    static std::string str(
+        "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+    );
+    std::random_device rd;
+    std::mt19937 generator(rd());
+    std::shuffle(str.begin(), str.end(), generator);
+    return str.substr(
+        0,
+        length
+    ); // assumes 32 < number of characters in str
+}
+
 
 inline void SetStyleColorDarkness()
 {

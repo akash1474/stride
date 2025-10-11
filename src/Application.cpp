@@ -286,7 +286,7 @@ void Application::ApplySmoothScrolling()
 
 void Application::Render()
 {
-    // ImGui::ShowDemoWindow();
+    ImGui::ShowDemoWindow();
     DragDropManager::RenderExperimentalLayout();
 }
 
@@ -353,7 +353,7 @@ void Application::Draw()
     }
 
     // Clear screen (minimize state check prevents unnecessary clearing)
-    glClearColor(0.11f, 0.11f, 0.11f, 1.0f);
+    glClearColor(0.15f, 0.15f, 0.15f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     // Render ImGui draw data

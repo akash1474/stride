@@ -4,11 +4,85 @@
 #include "string"
 #include "vector"
 
+/*
+#pragma once
+#include <string>
+#include <vector>
+#include <chrono>
+#include <optional>
+
+struct User
+{
+    std::string id;
+    std::string name;
+    std::string avatarUrl;
+};
+
+struct Label
+{
+    std::string id;
+    std::string name;
+    std::string color; // e.g. "green", "#00FF00"
+};
+
+struct ChecklistItem
+{
+    std::string id;
+    std::string title;
+    bool completed = false;
+};
+
+struct Attachment
+{
+    std::string id;
+    std::string name;
+    std::string url;
+    std::string type; // e.g. "image", "file", "link"
+    std::chrono::system_clock::time_point uploadedAt;
+};
+
+struct Comment
+{
+    std::string id;
+    std::string userId;
+    std::string message;
+    std::chrono::system_clock::time_point createdAt;
+};
+
+struct Card
+{
+    std::string id;
+    std::string title;
+    std::string description;
+    
+    std::vector<Label> labels;
+    std::vector<User> members;
+    std::vector<ChecklistItem> checklist;
+    std::vector<Attachment> attachments;
+    std::vector<Comment> comments;
+    
+    std::optional<std::chrono::system_clock::time_point> dueDate;
+    std::optional<std::chrono::system_clock::time_point> createdAt;
+    std::optional<std::chrono::system_clock::time_point> updatedAt;
+
+    int position = 0; // index/order inside list
+    std::string listId; // parent list
+    bool archived = false;
+    bool isCompleted = false;
+};
+
+*/
+
 struct Card
 {
     std::string title;
     std::string description;
     std::vector<std::string> badges;
+};
+
+struct ListData{
+  std::vector<Card> cards;
+  std::string title;
 };
 
 struct DragDropPayload

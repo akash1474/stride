@@ -342,7 +342,7 @@ void DragDropManager::CardList(const char* title, int list_id, std::vector<Card>
     {
         ImGui::BeginChild(
             (std::string("CardContainer_") + title).c_str(),
-            {0,0},
+            { 0, 0 },
             ImGuiChildFlags_AutoResizeY
         );
     }

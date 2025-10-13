@@ -12,3 +12,5 @@ compile_commands.json
 *.user
 .vs
 *.log
+*.dll
+*.lib

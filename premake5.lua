@@ -12,6 +12,7 @@ includeDirs["ImGui"]="packages/imgui"
 includeDirs["LunaSVG"]="packages/lunasvg/include"
 includeDirs["nlohmann"]="packages/nlohmann/include"
 includeDirs["ImAnim"]="packages/ImAnim/src"
+includeDirs["freetype"]="packages/freetype/include"
 
 include "packages/glfw"
 include "packages/imgui"
@@ -29,7 +30,7 @@ project "Stride"
     staticruntime "On"
 
     links {
-        "glfw","ImGui","opengl32","LunaSVG","dwmapi","Shlwapi","winmm","ImAnim"
+        "glfw","ImGui","opengl32","LunaSVG","dwmapi","Shlwapi","winmm","ImAnim","freetype"
     }
 
     includedirs{
@@ -40,7 +41,8 @@ project "Stride"
         "%{includeDirs.LunaSVG}",
         "%{includeDirs.SpdLog}",
         "%{includeDirs.nlohmann}",
-        "%{includeDirs.ImAnim}"
+        "%{includeDirs.ImAnim}",
+        "%{includeDirs.freetype}"
     }
 
     files { 

@@ -13,8 +13,8 @@ project "ImGui"
 	}
 
 	links{"glfw"}
-	
-	includedirs{".","../glfw/include"}
+
+	includedirs{".","../glfw/include","../freetype/include"}
 
 	filter "system:windows"
 		systemversion "latest"

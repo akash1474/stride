@@ -179,7 +179,6 @@ void ListHeader(const char* title)
 
     // --- Background ---
     ImU32 bg_col = ImGui::GetColorU32(ImGuiCol_WindowBg);
-    // ImU32 border_col = ImGui::GetColorU32(ImGuiCol_Border);
     window->DrawList->AddRectFilled(
         bb.Min,
         bb.Max,
@@ -187,7 +186,6 @@ void ListHeader(const char* title)
         10.0f * dpiScale,
         ImDrawFlags_RoundCornersTopLeft | ImDrawFlags_RoundCornersTopRight
     );
-    // window->DrawList->AddRect(bb.Min, bb.Max, border_col);
 
     // --- Layout ---
     ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(191, 193, 196, 255));
@@ -269,8 +267,18 @@ void ListHeader(const char* title)
 
 bool RenderCardListFooter()
 {
+    const float dpiScale = FontManager::GetDpiScale();
     ImGui::BeginChild("##Footer", ImVec2(ImGui::GetContentRegionAvail().x, 60.0f));
-    // ImGui::Text("%s", title);
+    ImGui::PushStyleColor(ImGuiCol_Button, IM_COL32(16, 18, 4, 255));
+    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, IM_COL32(255, 255, 255, 50));
+    ImGui::PushStyleColor(ImGuiCol_ButtonActive, IM_COL32(255, 255, 255, 100));
+    ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 5.0f);
+    const float width = 256.0f * dpiScale;
+    float x_center = (ImGui::GetContentRegionAvail().x - width) * 0.5f;
+    ImGui::SetCursorPosX(ImGui::GetCursorPosX() + x_center);
+    ImGui::Button(ICON_FA_PLUS " Add Card", { width, 40.0f });
+    ImGui::PopStyleColor(3);
+    ImGui::PopStyleVar();
     ImGui::EndChild();
 
     return false;
@@ -324,6 +332,21 @@ void DragDropManager::CardList(const char* title, int list_id, std::vector<Card>
 
     ListHeader(title);
 
+    static bool isHeightGreater = false;
+    static float lastHeight = 0.0f;
+
+    const float yprev = ImGui::GetCursorPosY();
+    const float height = std::min(lastHeight == 0.0f ? -1.0f : lastHeight, 700.0f);
+
+    if(isHeightGreater)
+    {
+        ImGui::BeginChild(
+            (std::string("CardContainer_") + title).c_str(),
+            {0,0},
+            ImGuiChildFlags_AutoResizeY
+        );
+    }
+
     const ImGuiPayload* global_payload = ImGui::GetDragDropPayload();
     bool payload_active = (global_payload && global_payload->IsDataType("CARD_PAYLOAD"));
 
@@ -338,29 +361,25 @@ void DragDropManager::CardList(const char* title, int list_id, std::vector<Card>
             if(d->source_list_id == list_id && d->card_index == (int)i)
                 isCurrentCardDragging = true;
         }
+        if(isCurrentCardDragging)
+            continue;
 
         // ---- DROPZONE between cards ----
 
-        if(!isCurrentCardDragging)
-        {
-            std::string dropzone_id
-                = std::string("dropzone_") + std::to_string(list_id) + "_" + std::to_string(i);
-            ImGui::InvisibleButton(
-                dropzone_id.c_str(),
-                ImVec2(ImGui::GetContentRegionAvail().x, 1.0f)
-            );
-            ImRect zone_rect(ImGui::GetItemRectMin(), ImGui::GetItemRectMax());
-            aDropZones.push_back({ zone_rect, list_id, (int)i });
+        std::string dropzone_id
+            = std::string("dropzone_") + std::to_string(list_id) + "_" + std::to_string(i);
+        ImGui::InvisibleButton(dropzone_id.c_str(), ImVec2(ImGui::GetContentRegionAvail().x, 1.0f));
+        ImRect zone_rect(ImGui::GetItemRectMin(), ImGui::GetItemRectMax());
+        aDropZones.push_back({ zone_rect, list_id, (int)i });
 
-            if(ImGui::BeginDragDropTarget())
+        if(ImGui::BeginDragDropTarget())
+        {
+            if(const ImGuiPayload* p = ImGui::AcceptDragDropPayload("CARD_PAYLOAD"))
             {
-                if(const ImGuiPayload* p = ImGui::AcceptDragDropPayload("CARD_PAYLOAD"))
-                {
-                    const DragDropPayload* d = (const DragDropPayload*)p->Data;
-                    aDragOperation = { d->source_list_id, d->card_index, list_id, (int)i };
-                }
-                ImGui::EndDragDropTarget();
+                const DragDropPayload* d = (const DragDropPayload*)p->Data;
+                aDragOperation = { d->source_list_id, d->card_index, list_id, (int)i };
             }
+            ImGui::EndDragDropTarget();
         }
 
         // Highlight active dropzone
@@ -398,14 +417,6 @@ void DragDropManager::CardList(const char* title, int list_id, std::vector<Card>
         // ---- CARD RENDER ----
         if(i < cards.size())
         {
-            // Skip rendering the card that's currently being dragged
-            if(payload_active && global_payload->IsDataType("CARD_PAYLOAD"))
-            {
-                const DragDropPayload* d = (const DragDropPayload*)global_payload->Data;
-                if(d->source_list_id == list_id && d->card_index == (int)i)
-                    continue;
-            }
-
             std::string card_id
                 = std::string("card_") + std::to_string(list_id) + "_" + std::to_string(i);
             float x_center = (ImGui::GetContentRegionAvail().x - 256.0f * dpiScale) * 0.5f;
@@ -415,7 +426,6 @@ void DragDropManager::CardList(const char* title, int list_id, std::vector<Card>
             if(ImGui::IsItemHovered())
                 ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
 
-            // Start drag
             if(ImGui::BeginDragDropSource(
                    ImGuiDragDropFlags_SourceNoPreviewTooltip
                    | ImGuiDragDropFlags_AcceptNoPreviewTooltip
@@ -430,6 +440,12 @@ void DragDropManager::CardList(const char* title, int list_id, std::vector<Card>
         }
     }
 
+    if(isHeightGreater)
+    {
+        ImGui::EndChild();
+    }
+    lastHeight = ImGui::GetCursorPosY() - yprev;
+    isHeightGreater = lastHeight > 700.0f;
 
     RenderCardListFooter();
     ImGui::End();
@@ -443,7 +459,6 @@ void DragDropManager::CardList(const char* title, int list_id, std::vector<Card>
 void DragDropManager::RenderExperimentalLayout()
 {
     const float dpiScale = FontManager::GetDpiScale();
-    DragOperation& aDragOperation = Get().mDragOperation;
 
     FontManager::Push(FontFamily::Medium, FontSize::Regular);
 
@@ -458,55 +473,10 @@ void DragDropManager::RenderExperimentalLayout()
     DrawTooltipOfDraggedItem();
 
 
-    Get().mCurrentDropZonePtr = nullptr;
-    if(const ImGuiPayload* payload = ImGui::GetDragDropPayload())
-    {
-        if(payload->IsDataType("CARD_PAYLOAD"))
-        {
-            ImVec2 mouse = ImGui::GetIO().MousePos;
-            float closest_dist = FLT_MAX;
-            Dropzone* closest_zone = nullptr;
+    Get().mCurrentDropZonePtr = GetCurrentDropzonePtr();
 
-            for(auto& zone : Get().mDropZones)
-            {
-                ImVec2 center = (zone.rect.Min + zone.rect.Max) * 0.5f;
-                float dx = mouse.x - center.x;
-                float dy = mouse.y - center.y;
-                float dist = dx * dx + dy * dy;
 
-                if(dist + 10.0f < closest_dist)
-                {
-                    closest_dist = dist;
-                    closest_zone = &zone;
-                }
-            }
-
-            // Highlight closest dropzone
-            if(closest_zone)
-            {
-                Get().mCurrentDropZonePtr = closest_zone;
-                // ImDrawList* fg = ImGui::GetForegroundDrawList();
-                // fg->AddRectFilled(
-                //     closest_zone->rect.Min,
-                //     closest_zone->rect.Max,
-                //     IM_COL32(255, 255, 255, 40),
-                //     2.0f
-                // );
-
-                // If mouse released -> perform drop
-                if(!ImGui::IsMouseDown(ImGuiMouseButton_Left))
-                {
-                    const DragDropPayload* d = (const DragDropPayload*)payload->Data;
-                    aDragOperation = { d->source_list_id,
-                                       d->card_index,
-                                       closest_zone->list_id,
-                                       closest_zone->insert_index };
-                    ImGui::ClearDragDrop(); // cancel imgui internal payload
-                }
-            }
-        }
-    }
-
+    DragOperation& aDragOperation = Get().mDragOperation;
     if(aDragOperation.IsPending())
     {
         PerformDropOperation();
@@ -543,4 +513,51 @@ void DragDropManager::PerformDropOperation()
         target_list->insert(target_list->begin() + insert_index, std::move(moved_card));
     }
     aDragOperation.Reset();
+}
+
+
+Dropzone* DragDropManager::GetCurrentDropzonePtr()
+{
+    DragOperation& aDragOperation = Get().mDragOperation;
+    if(const ImGuiPayload* payload = ImGui::GetDragDropPayload())
+    {
+        if(payload->IsDataType("CARD_PAYLOAD"))
+        {
+            ImVec2 mouse = ImGui::GetIO().MousePos;
+            float closest_dist = FLT_MAX;
+            Dropzone* closest_zone = nullptr;
+
+            for(auto& zone : Get().mDropZones)
+            {
+                ImVec2 center = (zone.rect.Min + zone.rect.Max) * 0.5f;
+                float dx = mouse.x - center.x;
+                float dy = mouse.y - center.y;
+                float dist = dx * dx + dy * dy;
+
+                if(dist + 10.0f < closest_dist)
+                {
+                    closest_dist = dist;
+                    closest_zone = &zone;
+                }
+            }
+
+            // Highlight closest dropzone
+            if(closest_zone)
+            {
+                // If mouse released -> perform drop
+                if(!ImGui::IsMouseDown(ImGuiMouseButton_Left))
+                {
+                    const DragDropPayload* d = (const DragDropPayload*)payload->Data;
+                    aDragOperation = { d->source_list_id,
+                                       d->card_index,
+                                       closest_zone->list_id,
+                                       closest_zone->insert_index };
+                    ImGui::ClearDragDrop(); // cancel imgui internal payload
+                }
+                return closest_zone;
+            }
+        }
+    }
+
+    return nullptr;
 }

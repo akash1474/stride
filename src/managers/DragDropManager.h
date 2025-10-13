@@ -55,7 +55,7 @@ class DragDropManager
   private:
     DragDropManager() = default;
     std::vector<Card> mWindowACards = {
-        { "Card A1",
+        { "Card A1 has a long title that needs to wrap properly",
           "This is a longer card description meant to test text wrapping inside the card layout. "
           "It should correctly wrap and not overflow beyond the card boundary. Make sure to check "
           "alignment.",
@@ -82,7 +82,7 @@ class DragDropManager
           "the visual "
           "feedback stays correct and data structures remain consistent.",
           { "Drag", "Drop", "Review", "Feature" } },
-        { "Card B3",
+        { u8"Card B3 ŝ 🔥",
           "Stress test with emoji 🚀🔥💡 and UTF-8 characters to ensure proper rendering and "
           "encoding handling.",
           { "Unicode", "Emoji", "Test" } },
@@ -102,4 +102,5 @@ class DragDropManager
     static void CardList(const char* title, int list_id, std::vector<Card>& cards);
     static void PerformDropOperation();
     static void DrawTooltipOfDraggedItem();
+    static Dropzone* GetCurrentDropzonePtr();
 };

@@ -3,13 +3,12 @@
 #include "imgui.h"
 #include "Timer.h"
 #include "Log.h"
-#include "imgui_internal.h"
 #include "managers/DragDropManager.h"
+#include "managers/Board.h"
 #include "Application.h"
 #include <csignal>
 #include <filesystem>
 #include <shellapi.h>
-#include <stdio.h>
 #include <winuser.h>
 #define GLFW_EXPOSE_NATIVE_WIN32
 #include "GLFW/glfw3native.h"
@@ -23,11 +22,8 @@
 #include "Notification.h"
 #include "MultiThreading.h"
 #include "DebuggerWindow.h"
-#include "Types.h"
 
 
-#include "resources/FontAwesomeRegular.embed"
-#include "resources/FontAwesomeSolid.embed"
 #include "resources/JetBrainsMonoNLRegular.embed"
 #include "resources/JetBrainsMonoNLItalic.embed"
 
@@ -194,6 +190,8 @@ bool Application::InitImGui()
     );
 
 
+    Board::Get().Setup();
+
     return true;
 }
 
@@ -287,7 +285,7 @@ void Application::ApplySmoothScrolling()
 void Application::Render()
 {
     ImGui::ShowDemoWindow();
-    DragDropManager::RenderExperimentalLayout();
+    Board::Get().Render();
 }
 
 void Application::PreRender()

@@ -64,4 +64,14 @@ namespace BadgeColors
             ? BadgeStyle{ IM_COL32(39, 39, 42, 255), IM_COL32(212, 212, 216, 255) }
             : BadgeStyle{ IM_COL32(244, 244, 245, 255), IM_COL32(39, 39, 42, 255) };
     }
+    inline BadgeStyle GetBadgeStyleForText(const std::string& text, bool darkMode = true)
+    {
+        static const std::vector<std::string> color_names
+            = { "red", "orange", "amber",  "yellow", "lime",   "green",   "emerald", "teal", "cyan",
+                "sky", "blue",   "indigo", "violet", "purple", "fuchsia", "pink",    "rose", "zinc" };
+
+        unsigned long long hash = std::hash<std::string>{}(text);
+        const std::string& selected_color_name = color_names[hash % color_names.size()];
+        return Get(selected_color_name, darkMode);
+    }
 }

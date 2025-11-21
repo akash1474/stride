@@ -1,119 +1,10 @@
 #pragma once
 
 #include "imgui_internal.h"
-#include "string"
 #include "vector"
-
-/*
-#pragma once
-#include <string>
-#include <vector>
-#include <chrono>
-#include <optional>
-
-struct User
-{
-    std::string id;
-    std::string name;
-    std::string avatarUrl;
-};
-
-struct Label
-{
-    std::string id;
-    std::string name;
-    std::string color; // e.g. "green", "#00FF00"
-};
-
-struct ChecklistItem
-{
-    std::string id;
-    std::string title;
-    bool completed = false;
-};
-
-struct Attachment
-{
-    std::string id;
-    std::string name;
-    std::string url;
-    std::string type; // e.g. "image", "file", "link"
-    std::chrono::system_clock::time_point uploadedAt;
-};
-
-struct Comment
-{
-    std::string id;
-    std::string userId;
-    std::string message;
-    std::chrono::system_clock::time_point createdAt;
-};
-
-struct Card
-{
-    std::string id;
-    std::string title;
-    std::string description;
-    
-    std::vector<Label> labels;
-    std::vector<User> members;
-    std::vector<ChecklistItem> checklist;
-    std::vector<Attachment> attachments;
-    std::vector<Comment> comments;
-    
-    std::optional<std::chrono::system_clock::time_point> dueDate;
-    std::optional<std::chrono::system_clock::time_point> createdAt;
-    std::optional<std::chrono::system_clock::time_point> updatedAt;
-
-    int position = 0; // index/order inside list
-    std::string listId; // parent list
-    bool archived = false;
-    bool isCompleted = false;
-};
-
-*/
-
-struct Card
-{
-    std::string title;
-    std::string description;
-    std::vector<std::string> badges;
-};
-
-struct ListData{
-  std::vector<Card> cards;
-  std::string title;
-};
-
-struct DragDropPayload
-{
-    int source_list_id;
-    int card_index;
-};
-
-struct DragOperation
-{
-    int source_list_id = -1;
-    int source_index = -1;
-    int target_list_id = -1;
-    int target_index = -1;
-    bool IsPending() const { return source_list_id != -1; }
-    void Reset()
-    {
-        source_list_id = -1;
-        source_index = -1;
-        target_list_id = -1;
-        target_index = -1;
-    }
-};
-
-struct Dropzone
-{
-    ImRect rect;
-    int list_id;
-    int insert_index;
-};
-
+#include "Card.h"
+#include "CardList.h"
+#include "DragDropTypes.h"
 
 class DragDropManager
 {
@@ -124,57 +15,21 @@ class DragDropManager
         return instance;
     }
 
-    static void RenderExperimentalLayout();
+    static void PerformDropOperation();
+    static void DrawTooltipOfDraggedItem();
+    static void UpdateDropZone();
+    
+    static DragOperation& GetDragOperation() { return Get().mDragOperation; }
+    static std::vector<Dropzone>& GetDropZones() { return Get().mDropZones; }
+    static Dropzone* GetCurrentDropZonePtr() { return Get().mCurrentDropZonePtr; }
+    static Card* GetCard(int list_id, int card_index);
 
   private:
     DragDropManager() = default;
-    std::vector<Card> mWindowACards = {
-        { "Card A1 has a long title that needs to wrap properly",
-          "This is a longer card description meant to test text wrapping inside the card layout. "
-          "It should correctly wrap and not overflow beyond the card boundary. Make sure to check "
-          "alignment.",
-          { "UI", "Feature", "High Priority", "In Progress" } },
-        { "Card A2", "Short description for testing minimal content rendering.", { "Bug", "Low" } },
-        { "Card A3",
-          "This card has no badges and helps ensure layout spacing remains consistent.",
-          {} },
-        { "Card A4",
-          "Card with many badges to test line breaks within the badge layout area.",
-          { "Backend", "Refactor", "Urgent", "Core", "Stable", "Code Review", "V2.1" } },
-        { "Card A5",
-          "Multiline\nText\nCheck — this description explicitly uses line breaks to verify "
-          "rendering behavior.",
-          { "Testing", "Formatting" } }
-    };
-
-    std::vector<Card> mWindowBCards = {
-        { "Card B1",
-          "This card belongs to window B. It should be draggable to window A and maintain state.",
-          { "UX", "Design" } },
-        { "Card B2",
-          "A long description to simulate overflow behavior. If dragging multiple times, ensure "
-          "the visual "
-          "feedback stays correct and data structures remain consistent.",
-          { "Drag", "Drop", "Review", "Feature" } },
-        { u8"Card B3 ŝ 🔥",
-          "Stress test with emoji 🚀🔥💡 and UTF-8 characters to ensure proper rendering and "
-          "encoding handling.",
-          { "Unicode", "Emoji", "Test" } },
-        { "Card B4", "Card with minimal description.", { "Minor", "Note" } },
-        { "Card B5",
-          "Empty badges list to confirm rendering spacing below description still looks good.",
-          {} },
-        { "Card B5 No Description", "", {} },
-        { "Card B5 No Description", "", { "Unicode", "Emoji", "Test" } }
-    };
 
     DragOperation mDragOperation;
-    DragDropPayload mPayload;
     std::vector<Dropzone> mDropZones;
     Dropzone* mCurrentDropZonePtr = nullptr;
 
-    static void CardList(const char* title, int list_id, std::vector<Card>& cards);
-    static void PerformDropOperation();
-    static void DrawTooltipOfDraggedItem();
-    static Dropzone* GetCurrentDropzonePtr();
+    static Dropzone* FindCurrentDropzone();
 };

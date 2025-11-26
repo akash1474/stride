@@ -29,10 +29,10 @@ namespace OpenGL
 
         PathManager()
         {
-#ifdef XP_DEBUG
+#ifdef GL_DEBUG
             mCacheDir = fs::path("./.cache");
 #else
-            mCacheDir = GetAppDataDir() / "OpenGL";
+            mCacheDir = GetAppDataDir() / "Stride";
 #endif
             fs::create_directories(mCacheDir);
         }

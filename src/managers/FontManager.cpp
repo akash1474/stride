@@ -195,11 +195,11 @@ void FontManager::ReloadFonts()
         );
         if(font)
         {
-            static const ImWchar emoji_ranges[] = { 0x1F300, 0x1FAFF, 0 }; // Emoji Unicode range
-            if(fs::exists("C:\\Windows\\Fonts\\seguiemj.ttf"))
+            if(fs::exists("C:/Windows/Fonts/seguiemj.ttf"))
             {
+                static const ImWchar emoji_ranges[] = { 0x1F300, 0x1FAFF, 0 }; // Emoji Unicode range
                 io.Fonts->AddFontFromFileTTF(
-                    "C:\\Windows\\Fonts\\seguiemj.ttf",
+                    "C:/Windows/Fonts/seguiemj.ttf",
                     fntManager.mBaseRasterFontSize, // Use the same size for better alignment
                     &icon_config,
                     emoji_ranges // Pass the emoji ranges here!
@@ -235,6 +235,7 @@ void FontManager::ReloadFonts()
             case FontFamily::SemiBold: fntManager.m_FontSemiBold = loaded_font; break;
             case FontFamily::Bold: fntManager.m_FontBold = loaded_font; break;
             case FontFamily::Black: fntManager.m_FontBlack = loaded_font; break;
+            case FontFamily::Unknown: fntManager.m_FontRegular = loaded_font; break;
             }
         }
     }

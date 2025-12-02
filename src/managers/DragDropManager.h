@@ -24,11 +24,21 @@ class DragDropManager
     static Dropzone* GetCurrentDropZonePtr() { return Get().mCurrentDropZonePtr; }
     static Card* GetCard(int list_id, int card_index);
 
+    static void RegisterListBounds(int list_id, ImRect bounds);
+    static void ClearListBounds();
+
   private:
     DragDropManager() = default;
 
+    struct ListBounds
+    {
+        int list_id;
+        ImRect rect;
+    };
+
     DragOperation mDragOperation;
     std::vector<Dropzone> mDropZones;
+    std::vector<ListBounds> mListBounds;
     Dropzone* mCurrentDropZonePtr = nullptr;
 
     static Dropzone* FindCurrentDropzone();

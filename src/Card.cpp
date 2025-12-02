@@ -108,7 +108,7 @@ void Card::Render(const char* unique_id, const char* title, const std::vector<st
     if(is_hovered)
         border_color = IM_COL32(255, 255, 255, 255);
 
-    window->DrawList->AddRectFilled(bb.Min, bb.Max, IM_COL32(36, 37, 40, 255), 5.0f); // Background
+    window->DrawList->AddRectFilled(bb.Min, bb.Max, IM_COL32(34, 39, 43, 255), 8.0f); // Lighter background, more rounding
     window->DrawList->AddRect(bb.Min, bb.Max, border_color, 5.0f, 0, 2.0f);           // Border
 
     if(isDragging) // Just render the card not it's elements

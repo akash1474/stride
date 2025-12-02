@@ -18,4 +18,8 @@ public:
 
 private:
     Board() = default;
+
+    bool mIsAddingList = false;
+    char mNewListTitleBuffer[256] = "";
+    char mTitle[512] = "TxEdit - A Minimal IDE";
 };

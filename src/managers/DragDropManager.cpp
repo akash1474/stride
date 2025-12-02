@@ -79,6 +79,16 @@ void DragDropManager::UpdateDropZone()
     Get().mCurrentDropZonePtr = FindCurrentDropzone();
 }
 
+void DragDropManager::RegisterListBounds(int list_id, ImRect bounds)
+{
+    Get().mListBounds.push_back({ list_id, bounds });
+}
+
+void DragDropManager::ClearListBounds()
+{
+    Get().mListBounds.clear();
+}
+
 Dropzone* DragDropManager::FindCurrentDropzone()
 {
     DragOperation& aDragOperation = Get().mDragOperation;
@@ -87,11 +97,30 @@ Dropzone* DragDropManager::FindCurrentDropzone()
         if(payload->IsDataType("CARD_PAYLOAD"))
         {
             ImVec2 mouse = ImGui::GetIO().MousePos;
+            
+            // 1. Find which list we are hovering
+            int hovered_list_id = -1;
+            for (const auto& bounds : Get().mListBounds)
+            {
+                if (bounds.rect.Contains(mouse))
+                {
+                    hovered_list_id = bounds.list_id;
+                    break; // Found the list we are in
+                }
+            }
+
             float closest_dist = FLT_MAX;
             Dropzone* closest_zone = nullptr;
 
+            // 2. Filter dropzones
+            // If we are hovering a list, ONLY consider dropzones in that list.
+            // If we are NOT hovering any list, consider ALL dropzones (fallback).
+            
             for(auto& zone : Get().mDropZones)
             {
+                if (hovered_list_id != -1 && zone.list_id != hovered_list_id)
+                    continue;
+
                 ImVec2 center = (zone.rect.Min + zone.rect.Max) * 0.5f;
                 float dx = mouse.x - center.x;
                 float dy = mouse.y - center.y;

@@ -53,14 +53,8 @@ void CardList::ListHeader()
         return;
 
     // --- Background ---
-    ImU32 bg_col = ImGui::GetColorU32(ImGuiCol_WindowBg);
-    window->DrawList->AddRectFilled(
-        bb.Min,
-        bb.Max,
-        bg_col,
-        10.0f * dpiScale,
-        ImDrawFlags_RoundCornersTopLeft | ImDrawFlags_RoundCornersTopRight
-    );
+    // Background is handled by the parent CardList child window with ChildRounding.
+    // We don't need to draw it manually here.
 
     // --- Layout ---
     ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(191, 193, 196, 255));
@@ -308,122 +302,24 @@ void CardList::RenderCardPopup()
 
         ImGui::Spacing();
 
-        // Custom Minimal Progress Bar
-        float barHeight = 4.0f * dpiScale;
-        ImVec2 barPos = ImGui::GetCursorScreenPos();
-        float barWidth = ImGui::GetContentRegionAvail().x;
-        
-        // Background track
-        ImGui::GetWindowDrawList()->AddRectFilled(
-            barPos, 
-            ImVec2(barPos.x + barWidth, barPos.y + barHeight), 
-            IM_COL32(45, 47, 50, 255), 
-            barHeight * 0.5f
-        );
-        
-        // Progress fill
-        if (progress > 0.0f)
-        {
-            ImGui::GetWindowDrawList()->AddRectFilled(
-                barPos, 
-                ImVec2(barPos.x + (barWidth * progress), barPos.y + barHeight), 
-                IM_COL32(34, 197, 94, 255), 
-                barHeight * 0.5f
-            );
-        }
-        
-        ImGui::Dummy(ImVec2(barWidth, barHeight));
+        Components::ProgressBar(progress, ImGui::GetContentRegionAvail().x, 4.0f * dpiScale);
         ImGui::Spacing();
 
         // Checklist Items
         ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 8 * dpiScale)); // Spacing between items
-        for (int i = 0; i < mTempChecklist.size(); ++i)
+        for (int i = 0; i < (int)mTempChecklist.size(); ++i)
         {
             ImGui::PushID(i);
             auto& item = mTempChecklist[i];
-
-            // Layout constants
-            const float checkboxSize = 20.0f * dpiScale;
-            const float deleteBtnSize = 20.0f * dpiScale;
-            const float itemPadding = 8.0f * dpiScale;
-            const float innerSpacing = 10.0f * dpiScale;
-            const float contentWidth = ImGui::GetContentRegionAvail().x;
+            bool deleted = false;
             
-            // Calculate text width
-            const float textWidth = contentWidth - checkboxSize - deleteBtnSize - (innerSpacing * 2.0f) - (itemPadding * 2.0f);
-            
-            // Calculate height based on text
-            ImVec2 textSize = ImGui::CalcTextSize(item.text.c_str(), nullptr, false, textWidth);
-            float rowHeight = std::max(textSize.y, checkboxSize) + (itemPadding * 2.0f);
+            Components::ChecklistItem(item.text.c_str(), &item.isChecked, &deleted, ImGui::GetContentRegionAvail().x);
 
-            ImVec2 cursorPos = ImGui::GetCursorScreenPos();
-            ImRect rowRect(cursorPos, ImVec2(cursorPos.x + contentWidth, cursorPos.y + rowHeight));
-
-            // Interaction for the whole row (hover effect)
-            bool hovered = ImGui::IsMouseHoveringRect(rowRect.Min, rowRect.Max);
-            
-            // Draw Background
-            if (hovered)
+            if (deleted)
             {
-                ImGui::GetWindowDrawList()->AddRectFilled(
-                    rowRect.Min, 
-                    rowRect.Max, 
-                    IM_COL32(255, 255, 255, 10), 
-                    4.0f
-                );
+                mTempChecklist.erase(mTempChecklist.begin() + i);
+                i--;
             }
-
-            // --- Checkbox ---
-            ImVec2 checkPos = ImVec2(cursorPos.x + itemPadding, cursorPos.y + (rowHeight - checkboxSize) * 0.5f);
-            ImRect checkRect(checkPos, ImVec2(checkPos.x + checkboxSize, checkPos.y + checkboxSize));
-            
-            // Handle Checkbox Click
-            bool checkHovered = ImGui::IsMouseHoveringRect(checkRect.Min, checkRect.Max);
-            if (checkHovered && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
-            {
-                item.isChecked = !item.isChecked;
-            }
-
-            // Draw Checkbox
-            ImU32 checkBorderCol = item.isChecked ? IM_COL32(34, 197, 94, 255) : IM_COL32(100, 100, 100, 255);
-            ImU32 checkBgCol = item.isChecked ? IM_COL32(34, 197, 94, 255) : IM_COL32(0, 0, 0, 0);
-            
-            ImGui::GetWindowDrawList()->AddRectFilled(checkRect.Min, checkRect.Max, checkBgCol, 4.0f);
-            ImGui::GetWindowDrawList()->AddRect(checkRect.Min, checkRect.Max, checkBorderCol, 4.0f, 0, 1.5f);
-            
-            if (item.isChecked)
-            {
-                ImGui::RenderCheckMark(ImGui::GetWindowDrawList(), checkRect.Min + ImVec2(3 * dpiScale, 3 * dpiScale), IM_COL32(255, 255, 255, 255), checkboxSize - 6.0f * dpiScale);
-            }
-
-            // --- Text ---
-            ImVec2 textPos = ImVec2(checkRect.Max.x + innerSpacing, cursorPos.y + itemPadding);
-            if (item.isChecked) 
-                ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(150, 150, 150, 255));
-            
-            // We use RenderTextWrapped-like logic but with manual positioning
-            ImGui::RenderTextWrapped(textPos,item.text.c_str(),nullptr, textWidth);
-            if (item.isChecked) 
-                ImGui::PopStyleColor();
-
-            // --- Delete Button ---
-            if (hovered)
-            {
-                ImVec2 delPos = ImVec2(rowRect.Max.x - itemPadding - deleteBtnSize, cursorPos.y + (rowHeight - deleteBtnSize) * 0.5f);
-                ImGui::SetCursorScreenPos(delPos);
-                ImGui::PushStyleColor(ImGuiCol_Button, IM_COL32(0,0,0,0));
-                ImGui::PushStyleColor(ImGuiCol_ButtonHovered, IM_COL32(255, 50, 50, 50));
-                ImGui::PushStyleColor(ImGuiCol_ButtonActive, IM_COL32(255, 50, 50, 100));
-                if (ImGui::Button(ICON_FA_XMARK, ImVec2(deleteBtnSize, deleteBtnSize)))
-                {
-                    mTempChecklist.erase(mTempChecklist.begin() + i);
-                    i--;
-                }
-                ImGui::PopStyleColor(3);
-            }
-
-            // Advance cursor
-            ImGui::SetCursorScreenPos(ImVec2(cursorPos.x, cursorPos.y + rowHeight));
             
             ImGui::PopID();
         }
@@ -432,46 +328,17 @@ void CardList::RenderCardPopup()
         // Add New Item
         ImGui::Spacing();
         
-        ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(10 * dpiScale, 8 * dpiScale));
-        ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 4.0f);
-        ImGui::PushStyleColor(ImGuiCol_FrameBg, IM_COL32(255, 255, 255, 10)); // Subtle background
-        
-        // Calculate width for input (leaving space for a small icon button if we want, or just full width)
-        // Let's do full width input that handles Enter, and maybe a small icon inside it?
-        // For simplicity and "modern minimal", a clean input that spans the width is good.
-        // We'll add a "+" icon on the left as a label/button.
-        
-        float iconSize = 30.0f * dpiScale;
-        ImGui::PushStyleColor(ImGuiCol_Button, IM_COL32(0,0,0,0));
-        if (ImGui::Button(ICON_FA_PLUS, ImVec2(iconSize, 35 * dpiScale))) // Clickable plus icon
-        {
-             if (strlen(mChecklistInputBuffer) > 0)
-            {
-                mTempChecklist.push_back({ mChecklistInputBuffer, false });
-                memset(mChecklistInputBuffer, 0, sizeof(mChecklistInputBuffer));
-            }
-            else
-            {
-                ImGui::SetKeyboardFocusHere(1); // Focus the input next to it
-            }
-        }
-        ImGui::PopStyleColor();
-        
-        ImGui::SameLine();
-        ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-        
-        bool addRequested = ImGui::InputTextWithHint("##newItem", "Add an item...", mChecklistInputBuffer, sizeof(mChecklistInputBuffer), ImGuiInputTextFlags_EnterReturnsTrue);
-        
-        ImGui::PopStyleColor(); // FrameBg
-        ImGui::PopStyleVar(2); // FramePadding, FrameRounding
-
-        if (addRequested)
+        if (Components::InputWithIcon("##newItem", ICON_FA_PLUS, "Add an item...", mChecklistInputBuffer, sizeof(mChecklistInputBuffer), ImGui::GetContentRegionAvail().x))
         {
             if (strlen(mChecklistInputBuffer) > 0)
             {
                 mTempChecklist.push_back({ mChecklistInputBuffer, false });
                 memset(mChecklistInputBuffer, 0, sizeof(mChecklistInputBuffer));
                 ImGui::SetKeyboardFocusHere(-1); // Keep focus
+            }
+            else
+            {
+                ImGui::SetKeyboardFocusHere(1); // Focus the input next to it
             }
         }
 
@@ -486,22 +353,16 @@ void CardList::RenderCardPopup()
         FontManager::Push(FontFamily::SemiBold, FontSize::Regular);
 
         // Cancel Button
-        ImGui::PushStyleColor(ImGuiCol_Button, IM_COL32(45, 45, 50, 255));
-        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, IM_COL32(60, 60, 65, 255));
-        ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 6.0f);
-        if (ImGui::Button("Cancel", ImVec2(btnWidth, 35 * dpiScale)) || ImGui::IsKeyPressed(ImGuiKey_Escape))
+        if (Components::StyledButton("Cancel", ImVec2(btnWidth, 35 * dpiScale), IM_COL32(45, 45, 50, 255), IM_COL32(60, 60, 65, 255)) || ImGui::IsKeyPressed(ImGuiKey_Escape))
         {
             ImGui::CloseCurrentPopup();
         }
-        ImGui::PopStyleColor(2);
 
         ImGui::SameLine();
 
         // Save/Create Button
-        ImGui::PushStyleColor(ImGuiCol_Button, IM_COL32(59, 130, 246, 255)); // Blue
-        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, IM_COL32(37, 99, 235, 255));
         const char* btnText = mEditingCardIndex == -1 ? "Create" : "Save";
-        if (ImGui::Button(btnText, ImVec2(btnWidth, 35 * dpiScale)) || enterPressed)
+        if (Components::StyledButton(btnText, ImVec2(btnWidth, 35 * dpiScale), IM_COL32(59, 130, 246, 255), IM_COL32(37, 99, 235, 255)) || enterPressed)
         {
             if (strlen(mCardTitleBuffer) > 0)
             {
@@ -511,7 +372,7 @@ void CardList::RenderCardPopup()
                     newCard.mChecklist = mTempChecklist;
                     mCards.push_back(std::move(newCard));
                 }
-                else if (mEditingCardIndex >= 0 && mEditingCardIndex < mCards.size())
+                else if (mEditingCardIndex >= 0 && mEditingCardIndex < (int)mCards.size())
                 {
                     mCards[mEditingCardIndex].mTitle = mCardTitleBuffer;
                     mCards[mEditingCardIndex].mDescription = mCardDescriptionBuffer;
@@ -521,8 +382,6 @@ void CardList::RenderCardPopup()
                 ImGui::CloseCurrentPopup();
             }
         }
-        ImGui::PopStyleColor(2);
-        ImGui::PopStyleVar(); // FrameRounding
 
         FontManager::Pop();
 
@@ -537,14 +396,18 @@ bool CardList::RenderCardListFooter()
 {
     const float dpiScale = FontManager::GetDpiScale();
     ImGui::BeginChild("##Footer", ImVec2(ImGui::GetContentRegionAvail().x, 60.0f));
-    ImGui::PushStyleColor(ImGuiCol_Button, IM_COL32(16, 18, 4, 255));
-    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, IM_COL32(255, 255, 255, 50));
-    ImGui::PushStyleColor(ImGuiCol_ButtonActive, IM_COL32(255, 255, 255, 100));
+    ImGui::PushStyleColor(ImGuiCol_Button, IM_COL32(0, 0, 0, 0)); // Transparent
+    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, IM_COL32(255, 255, 255, 20)); // Subtle hover
+    ImGui::PushStyleColor(ImGuiCol_ButtonActive, IM_COL32(255, 255, 255, 40));
+    ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(150, 150, 150, 255)); // Grey text
     ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 5.0f);
     const float width = 256.0f * dpiScale;
     float x_center = (ImGui::GetContentRegionAvail().x - width) * 0.5f;
     ImGui::SetCursorPosX(ImGui::GetCursorPosX() + x_center);
-    if(ImGui::Button(ICON_FA_PLUS " Add Card", { width, 40.0f }))
+    
+    // Align text to left
+    ImGui::PushStyleVar(ImGuiStyleVar_ButtonTextAlign, ImVec2(0.5f, 0.5f));
+    if(ImGui::Button(ICON_FA_PLUS "  Add a card", { width, 35.0f }))
     {
         mShowCardPopup = true;
         mEditingCardIndex = -1;
@@ -554,49 +417,71 @@ bool CardList::RenderCardListFooter()
         mTempChecklist.clear();
         memset(mChecklistInputBuffer, 0, sizeof(mChecklistInputBuffer));
     }
-    ImGui::PopStyleColor(3);
+    ImGui::PopStyleVar(); // ButtonTextAlign
+    ImGui::PopStyleColor(4);
     ImGui::PopStyleVar();
     ImGui::EndChild();
 
     return false;
 }
 
-void CardList::Render(int list_id)
+void CardList::Render(int list_id, ImVec2 size)
 {
     const float dpiScale = FontManager::GetDpiScale();
     std::vector<Dropzone>& aDropZones = DragDropManager::GetDropZones();
     if(list_id == 0)
+    {
         aDropZones.clear();
+        DragDropManager::ClearListBounds();
+    }
 
     DragOperation& aDragOperation = DragDropManager::GetDragOperation();
 
     // Window setup
+    ImGui::PushStyleColor(ImGuiCol_ChildBg, IM_COL32(16, 18, 4, 255));
+    // Push WindowBg to match ChildBg so ListHeader (which uses WindowBg) blends in.
     ImGui::PushStyleColor(ImGuiCol_WindowBg, IM_COL32(16, 18, 4, 255));
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 10.0f);
+    ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 10.0f);
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 0.0f, 0.0f });
     ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-    ImGui::Begin(
-        mTitle.c_str(),
-        nullptr,
-        ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoResize
+    
+    // Use BeginChild instead of Begin for layout within the board
+    // IMPORTANT: NoScrollbar here to prevent double scrollbars. 
+    // The inner content will handle scrolling.
+    ImGui::BeginChild(
+        (std::string("CardList_") + mUniqueID).c_str(),
+        size,
+        false, // No border
+        ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse
     );
+
+    // Register list bounds for drag and drop logic
+    ImRect listRect(ImGui::GetWindowPos(), ImVec2(ImGui::GetWindowPos().x + ImGui::GetWindowSize().x, ImGui::GetWindowPos().y + ImGui::GetWindowSize().y));
+    DragDropManager::RegisterListBounds(list_id, listRect);
+
+    // Make inner children transparent so they don't cover the rounded corners of the parent
+    ImGui::PushStyleColor(ImGuiCol_ChildBg, IM_COL32(0, 0, 0, 0));
 
     ListHeader();
 
-    const float thresholdHeight = 700.0f;
-    bool useChildWindow = (mLastContentHeight > thresholdHeight);
+    // Calculate remaining height for cards
+    // Header is approx 40 + padding. Footer is 60.
+    // We can use GetCursorPosY to find where we are after Header.
+    float yAfterHeader = ImGui::GetCursorPosY();
+    float footerHeight = 60.0f; // From RenderCardListFooter
+    float spacing = ImGui::GetStyle().ItemSpacing.y;
+    // Subtract spacing for before footer
+    float availableHeight = size.y - yAfterHeader - footerHeight + spacing;
 
-    ImGui::SetTooltip("UsingChild:%d LastContentHeight:%d", useChildWindow, (int)mLastContentHeight);
+    // Ensure we have some minimum height
+    if (availableHeight < 100.0f) availableHeight = 100.0f;
 
-    const float yprev_content = ImGui::GetCursorPosY();
-    if (useChildWindow)
-    {
-        ImGui::BeginChild(
-            (std::string("CardContainer_") + mTitle).c_str(),
-            { 0, std::min(thresholdHeight,mLastContentHeight) } // Fixed 700px height
-        );
-    }
-
+    ImGui::BeginChild(
+        (std::string("CardContainer_") + mTitle).c_str(),
+        ImVec2(0, availableHeight),
+        false, 
+        ImGuiWindowFlags_None // Allow scrolling here
+    );
 
     const ImGuiPayload* global_payload = ImGui::GetDragDropPayload();
     bool payload_active = (global_payload && global_payload->IsDataType("CARD_PAYLOAD"));
@@ -710,11 +595,7 @@ void CardList::Render(int list_id)
         }
     }
 
-    if (useChildWindow)
-    {
-        ImGui::EndChild();
-    }
-    mLastContentHeight = ImGui::GetCursorPosY() - yprev_content;
+    ImGui::EndChild(); // End CardContainer
 
     if (mShowCardPopup)
     {
@@ -725,8 +606,10 @@ void CardList::Render(int list_id)
     RenderCardPopup();
 
     RenderCardListFooter();
-    ImGui::End();
+    
+    ImGui::PopStyleColor(); // Pop transparent ChildBg
+    ImGui::EndChild(); // End CardList
 
-    ImGui::PopStyleColor();
+    ImGui::PopStyleColor(2); // ChildBg, WindowBg
     ImGui::PopStyleVar(3);
 }

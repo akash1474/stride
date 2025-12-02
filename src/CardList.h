@@ -1,6 +1,7 @@
 #pragma once
 #include "string"
 #include "Card.h"
+#include "imgui.h"
 
 
 class CardList{
@@ -10,7 +11,7 @@ class CardList{
 
     CardList(std::string title, const std::vector<Card>&& aCards);
 
-    void Render(int list_id);
+    void Render(int list_id, ImVec2 size);
 
 private:
     char mTitleBuffer[256] = "";

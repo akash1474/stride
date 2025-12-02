@@ -197,7 +197,7 @@ void FontManager::ReloadFonts()
         {
             if(fs::exists("C:/Windows/Fonts/seguiemj.ttf"))
             {
-                static const ImWchar emoji_ranges[] = { 0x1F300, 0x1FAFF, 0 }; // Emoji Unicode range
+                static const ImWchar emoji_ranges[] = { static_cast<ImWchar>(0x1F300), static_cast<ImWchar>(0x1FAFF), 0 }; // Emoji Unicode range
                 io.Fonts->AddFontFromFileTTF(
                     "C:/Windows/Fonts/seguiemj.ttf",
                     fntManager.mBaseRasterFontSize, // Use the same size for better alignment

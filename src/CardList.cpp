@@ -410,12 +410,7 @@ bool CardList::RenderCardListFooter()
     if(ImGui::Button(ICON_FA_PLUS "  Add a card", { width, 35.0f }))
     {
         mShowCardPopup = true;
-        mEditingCardIndex = -1;
-        memset(mCardTitleBuffer, 0, sizeof(mCardTitleBuffer));
-        memset(mCardDescriptionBuffer, 0, sizeof(mCardDescriptionBuffer));
-        mCardBadges.clear();
-        mTempChecklist.clear();
-        memset(mChecklistInputBuffer, 0, sizeof(mChecklistInputBuffer));
+        ResetCardListState();
     }
     ImGui::PopStyleVar(); // ButtonTextAlign
     ImGui::PopStyleColor(4);
@@ -597,19 +592,30 @@ void CardList::Render(int list_id, ImVec2 size)
 
     ImGui::EndChild(); // End CardContainer
 
-    if (mShowCardPopup)
+    bool tOpenNewCardList = ImGui::IsItemHovered(ImGuiHoveredFlags_RectOnly) && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left);
+    if(tOpenNewCardList){
+        ResetCardListState();
+    }
+
+    RenderCardListFooter();
+    if (mShowCardPopup || tOpenNewCardList)
     {
         ImGui::OpenPopup((std::string("Card Popup##") + mUniqueID).c_str());
         mShowCardPopup = false;
     }
-
     RenderCardPopup();
 
-    RenderCardListFooter();
-    
     ImGui::PopStyleColor(); // Pop transparent ChildBg
     ImGui::EndChild(); // End CardList
 
     ImGui::PopStyleColor(2); // ChildBg, WindowBg
     ImGui::PopStyleVar(3);
+}
+void CardList::ResetCardListState(){
+    mEditingCardIndex = -1;
+    memset(mCardTitleBuffer, 0, sizeof(mCardTitleBuffer));
+    memset(mCardDescriptionBuffer, 0, sizeof(mCardDescriptionBuffer));
+    mCardBadges.clear();
+    mTempChecklist.clear();
+    memset(mChecklistInputBuffer, 0, sizeof(mChecklistInputBuffer));
 }

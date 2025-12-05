@@ -18,6 +18,8 @@ private:
     const float scroll_multiplier = 1.0f;
     const float scroll_smoothing = 8.0f;
     ImVec2 scroll_energy;
+    
+    struct ImGuiTestEngine* mTestEngine{nullptr};
 
 
 public:

@@ -158,13 +158,21 @@ namespace Components
         ImRect checkRect(checkPos, ImVec2(checkPos.x + checkboxSize, checkPos.y + checkboxSize));
         
         // Handle Checkbox Click
-        bool checkHovered = ImGui::IsMouseHoveringRect(checkRect.Min, checkRect.Max);
+        // We use the label as the ID for the checkbox so tests can find it.
+        ImGuiID checkID = window->GetID(label);
+        bool checkHovered, checkHeld;
+        bool checkPressed = ImGui::ButtonBehavior(checkRect, checkID, &checkHovered, &checkHeld);
+        
         bool toggled = false;
-        if (checkHovered && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+        if (checkPressed)
         {
             *checked = !(*checked);
             toggled = true;
         }
+        
+        // Register item so test engine can find it
+        // Note: We don't use ItemSize here because we handle layout manually, but ItemAdd is needed.
+        ImGui::ItemAdd(checkRect, checkID);
 
         // Draw Checkbox
         ImU32 checkBorderCol = *checked ? IM_COL32(34, 197, 94, 255) : IM_COL32(100, 100, 100, 255);

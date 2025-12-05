@@ -35,4 +35,5 @@ private:
 
     void ListHeader();
     bool RenderCardListFooter();
+    void ResetCardListState();
 };

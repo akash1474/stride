@@ -1,10 +1,8 @@
 #include "pch.h"
-#include "managers/DragDropManager.h"
-#include "managers/Board.h"
-#include "managers/FontManager.h"
 #include "imgui.h"
 #include "imgui_internal.h"
-#include <algorithm>
+#include "managers/DragDropManager.h"
+#include "managers/Board.h"
 
 void DragDropManager::DrawTooltipOfDraggedItem()
 {

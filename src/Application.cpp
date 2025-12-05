@@ -22,6 +22,9 @@
 #include "Notification.h"
 #include "MultiThreading.h"
 #include "DebuggerWindow.h"
+#include "imgui_test_engine/imgui_te_engine.h"
+#include "imgui_test_engine/imgui_te_ui.h"
+#include "tests/Tests.h"
 
 
 #include "resources/JetBrainsMonoNLRegular.embed"
@@ -190,7 +193,19 @@ bool Application::InitImGui()
     );
 
 
+
     Board::Get().Setup();
+
+    // Setup Test Engine
+    Get().mTestEngine = ImGuiTestEngine_CreateContext();
+    ImGuiTestEngineIO& test_io = ImGuiTestEngine_GetIO(Get().mTestEngine);
+    test_io.ConfigVerboseLevel = ImGuiTestVerboseLevel_Info;
+    test_io.ConfigVerboseLevelOnError = ImGuiTestVerboseLevel_Debug;
+    test_io.ConfigRunSpeed = ImGuiTestRunSpeed_Cinematic;
+    
+    ImGuiTestEngine_Start(Get().mTestEngine, ImGui::GetCurrentContext());
+    RegisterTests(Get().mTestEngine);
+    ImGuiTestEngine_InstallDefaultCrashHandler();
 
     return true;
 }
@@ -285,6 +300,7 @@ void Application::ApplySmoothScrolling()
 void Application::Render()
 {
     ImGui::ShowDemoWindow();
+    // ImGuiTestEngine_ShowTestEngineWindows(Get().mTestEngine, nullptr);
     Board::Get().Render();
 }
 
@@ -375,6 +391,8 @@ void Application::Draw()
 
 
     glfwSwapBuffers(Get().mWindow);
+    
+    ImGuiTestEngine_PostSwap(Get().mTestEngine);
 }
 
 
@@ -386,7 +404,9 @@ void Application::Destroy()
     ImGui_ImplOpenGL3_Shutdown();
 #endif
     ImGui_ImplGlfw_Shutdown();
+    ImGuiTestEngine_Stop(Get().mTestEngine);
     ImGui::DestroyContext();
+    ImGuiTestEngine_DestroyContext(Get().mTestEngine);
 
     glfwDestroyWindow(GetGLFWwindow());
     glfwTerminate();

@@ -13,11 +13,13 @@ includeDirs["LunaSVG"]="packages/lunasvg/include"
 includeDirs["nlohmann"]="packages/nlohmann/include"
 includeDirs["ImAnim"]="packages/ImAnim/src"
 includeDirs["freetype"]="packages/freetype/include"
+includeDirs["ImGuiTestEngine"]="packages/imgui_test_engine"
 
 include "packages/glfw"
 include "packages/imgui"
 include "packages/lunasvg"
 include "packages/ImAnim"
+include "packages/imgui_test_engine"
 
 project "Stride"
     kind "ConsoleApp"
@@ -30,7 +32,7 @@ project "Stride"
     staticruntime "On"
 
     links {
-        "glfw","ImGui","opengl32","LunaSVG","dwmapi","Shlwapi","winmm","ImAnim","freetype"
+        "glfw","ImGui","opengl32","LunaSVG","dwmapi","Shlwapi","winmm","ImAnim","freetype", "ImGuiTestEngine"
     }
 
     includedirs{
@@ -42,7 +44,8 @@ project "Stride"
         "%{includeDirs.SpdLog}",
         "%{includeDirs.nlohmann}",
         "%{includeDirs.ImAnim}",
-        "%{includeDirs.freetype}"
+        "%{includeDirs.freetype}",
+        "%{includeDirs.ImGuiTestEngine}"
     }
 
     files { 
@@ -58,7 +61,8 @@ project "Stride"
         symbols "On"
         optimize "Off"
         buildoptions { "/MP","/DEBUG:FULL","/utf-8" }
-        defines {"GL_DEBUG"}
+        buildoptions { "/MP","/DEBUG:FULL","/utf-8" }
+        defines {"GL_DEBUG", "IMGUI_ENABLE_TEST_ENGINE", "IMGUI_TEST_ENGINE_ENABLE_COROUTINE_STDTHREAD_IMPL"}
 
     filter {"configurations:Release"}
         runtime "Release"
@@ -66,7 +70,8 @@ project "Stride"
         symbols "Off"
         characterset ("MBCS")
         buildoptions { "/MP","/utf-8" }
-        defines {"GL_DEBUG","_CRT_SECURE_NO_WARNINGS"}
+        buildoptions { "/MP","/utf-8" }
+        defines {"GL_DEBUG","_CRT_SECURE_NO_WARNINGS", "IMGUI_ENABLE_TEST_ENGINE", "IMGUI_TEST_ENGINE_ENABLE_COROUTINE_STDTHREAD_IMPL"}
 
     filter "configurations:Dist"
         kind "WindowedApp"

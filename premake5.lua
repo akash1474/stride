@@ -14,12 +14,14 @@ includeDirs["nlohmann"]="packages/nlohmann/include"
 includeDirs["ImAnim"]="packages/ImAnim/src"
 includeDirs["freetype"]="packages/freetype/include"
 includeDirs["ImGuiTestEngine"]="packages/imgui_test_engine"
+includeDirs["SQLite"]="packages/sqlite"
 
 include "packages/glfw"
 include "packages/imgui"
 include "packages/lunasvg"
 include "packages/ImAnim"
 include "packages/imgui_test_engine"
+include "packages/sqlite"
 
 project "Stride"
     kind "ConsoleApp"
@@ -32,7 +34,7 @@ project "Stride"
     staticruntime "On"
 
     links {
-        "glfw","ImGui","opengl32","LunaSVG","dwmapi","Shlwapi","winmm","ImAnim","freetype", "ImGuiTestEngine"
+        "glfw","ImGui","opengl32","LunaSVG","dwmapi","Shlwapi","winmm","ImAnim","freetype", "ImGuiTestEngine","SQLite"
     }
 
     includedirs{
@@ -45,7 +47,8 @@ project "Stride"
         "%{includeDirs.nlohmann}",
         "%{includeDirs.ImAnim}",
         "%{includeDirs.freetype}",
-        "%{includeDirs.ImGuiTestEngine}"
+        "%{includeDirs.ImGuiTestEngine}",
+        "%{includeDirs.SQLite}"
     }
 
     files { 

@@ -1,8 +1,9 @@
-#include "pch.h"
+#include "pch.h" // Unused
+
 #include "imgui.h"
 #include "imgui_internal.h"
 #include "managers/DragDropManager.h"
-#include "managers/Board.h"
+#include "managers/BoardManager.h"
 
 void DragDropManager::DrawTooltipOfDraggedItem()
 {
@@ -35,11 +36,14 @@ void DragDropManager::PerformDropOperation()
 {
     DragOperation& aDragOperation = Get().mDragOperation;
     
-    // Access lists via Board
-    std::vector<CardList>& lists = Board::Get().mCardLists;
+    // Access lists via BoardManager
+    BoardData* activeBoard = BoardManager::Get().GetActiveBoard();
+    if (!activeBoard) return;
+
+    std::vector<CardList>& lists = activeBoard->mCardLists;
     
-    if (aDragOperation.source_list_id < 0 || aDragOperation.source_list_id >= lists.size() ||
-        aDragOperation.target_list_id < 0 || aDragOperation.target_list_id >= lists.size())
+    if (aDragOperation.source_list_id < 0 || aDragOperation.source_list_id >= (int)lists.size() ||
+        aDragOperation.target_list_id < 0 || aDragOperation.target_list_id >= (int)lists.size())
     {
         aDragOperation.Reset();
         return;
@@ -154,11 +158,14 @@ Dropzone* DragDropManager::FindCurrentDropzone()
 
 Card* DragDropManager::GetCard(int list_id, int card_index)
 {
-    std::vector<CardList>& lists = Board::Get().mCardLists;
-    if (list_id >= 0 && list_id < lists.size())
+    BoardData* activeBoard = BoardManager::Get().GetActiveBoard();
+    if(!activeBoard) return nullptr;
+
+    std::vector<CardList>& lists = activeBoard->mCardLists;
+    if (list_id >= 0 && list_id < (int)lists.size())
     {
         std::vector<Card>& cards = lists[list_id].mCards;
-        if (card_index >= 0 && card_index < cards.size())
+        if (card_index >= 0 && card_index < (int)cards.size())
         {
             return &cards[card_index];
         }

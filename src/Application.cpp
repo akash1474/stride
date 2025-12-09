@@ -4,7 +4,7 @@
 #include "Timer.h"
 #include "Log.h"
 #include "managers/DragDropManager.h"
-#include "managers/Board.h"
+#include "managers/BoardManager.h"
 #include "Application.h"
 #include <csignal>
 #include <filesystem>
@@ -194,7 +194,7 @@ bool Application::InitImGui()
 
 
 
-    Board::Get().Setup();
+    BoardManager::Get().Setup();
 
     // Setup Test Engine
     Get().mTestEngine = ImGuiTestEngine_CreateContext();
@@ -301,7 +301,7 @@ void Application::Render()
 {
     ImGui::ShowDemoWindow();
     // ImGuiTestEngine_ShowTestEngineWindows(Get().mTestEngine, nullptr);
-    Board::Get().Render();
+    BoardManager::Get().Render();
 }
 
 void Application::PreRender()

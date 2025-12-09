@@ -1,11 +1,16 @@
 #include "pch.h"
-#include "Board.h"
+#include "BoardManager.h"
+#include "imgui_internal.h"
 #include "managers/DragDropManager.h"
 #include "managers/FontManager.h"
 #include "imgui.h"
 
-void Board::Setup()
+void BoardManager::Setup()
 {
+    // Create Default Board
+    BoardData& board = CreateBoard("TxEdit - A Minimal IDE");
+    
+    // Default Data (Migrated from Board.cpp)
     std::vector<Card> mWindowACards = {
         { "Card A1 has a long title that needs to wrap properly",
           "This is a longer card description meant to test text wrapping inside the card layout. "
@@ -46,13 +51,61 @@ void Board::Setup()
         { "Card B5 No Description", "", { "Unicode", "Emoji", "Test" } }
     };
 
-    mCardLists.emplace_back("Super Long Title is wrapping", std::move(mWindowACards));
-    mCardLists.emplace_back("Doing", std::move(mWindowBCards));
-    mCardLists.emplace_back("Done", std::vector<Card>{});
+    board.mCardLists.emplace_back("Super Long Title is wrapping", std::move(mWindowACards));
+    board.mCardLists.emplace_back("Doing", std::move(mWindowBCards));
+    board.mCardLists.emplace_back("Done", std::vector<Card>{});
+
+    SetActiveBoard(board.mID);
 }
 
-void Board::Render()
+BoardData& BoardManager::CreateBoard(const std::string& title)
 {
+    // Simple UID generation
+    static int idCounter = 0;
+    std::string id = "board_" + std::to_string(++idCounter); 
+    
+    mBoards.emplace_back(id, title);
+    return mBoards.back();
+}
+
+void BoardManager::SetActiveBoard(const std::string& id)
+{
+    mActiveBoardID = id;
+    // Reset UI state when switching
+    mIsAddingList = false;
+    memset(mNewListTitleBuffer, 0, sizeof(mNewListTitleBuffer));
+}
+
+BoardData* BoardManager::GetActiveBoard()
+{
+    return GetBoard(mActiveBoardID);
+}
+
+BoardData* BoardManager::GetBoard(const std::string& id)
+{
+    for(auto& board : mBoards)
+    {
+        if(board.mID == id)
+            return &board;
+    }
+    return nullptr;
+}
+
+void BoardManager::AddList(const std::string& title)
+{
+    BoardData* board = GetActiveBoard();
+    if(board)
+    {
+        board->mCardLists.emplace_back(title, std::vector<Card>{});
+    }
+}
+
+void BoardManager::Render()
+{
+    BoardData* activeBoard = GetActiveBoard();
+    if(!activeBoard) return;
+
+    // --- Render Logic from Board.cpp ---
     const float dpiScale = FontManager::GetDpiScale();
 
     // --- Main Board Window ---
@@ -87,11 +140,11 @@ void Board::Render()
     float spacing = 5.0f * dpiScale;
 
     ImGui::SetCursorPos(ImVec2(15.0f * dpiScale + logoWidth + spacing, centerY));
-    ImGui::Text("%s", Get().mTitle);
+    ImGui::Text("%s", activeBoard->mTitle.c_str());
     FontManager::Pop();
 
 
-    // Settings Button
+    // Settings Button / Board Switcher
     float buttonSize = 30 * dpiScale;
     float rightOffset = 15 * dpiScale;
     ImGui::SetCursorPos(ImVec2(ImGui::GetWindowWidth() - buttonSize - rightOffset , 5 * dpiScale));
@@ -103,12 +156,56 @@ void Board::Render()
     }
     ImGui::PopStyleColor();
 
+    ImGui::PushStyleVar(ImGuiStyleVar_PopupRounding, 8.0f * dpiScale);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(10.0f, 12.0f * dpiScale));
+    ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 8.0f * dpiScale));
+    ImGui::PushStyleColor(ImGuiCol_PopupBg, IM_COL32(28, 30, 36, 255));
+    ImGui::PushStyleColor(ImGuiCol_HeaderHovered, IM_COL32(255, 255, 255, 20));
+    ImGui::PushStyleColor(ImGuiCol_Header, IM_COL32(28, 30, 36, 255));
+    
     if (ImGui::BeginPopup("BoardSettingsPopup"))
     {
-        if (ImGui::MenuItem("Settings")) {}
-        if (ImGui::MenuItem("About")) {}
+        FontManager::Push(FontFamily::SemiBold, FontSize::Small);
+        ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 1.0f), "SWITCH BOARD");
+        FontManager::Pop();
+
+        ImGui::Spacing();
+
+        ImGui::PushStyleVar(ImGuiStyleVar_FramePadding,ImVec2(20.0f,10.0f));
+        for(const auto& b : mBoards)
+        {
+            bool isSelected = (b.mID == mActiveBoardID);
+            std::string label = std::string(isSelected ? ICON_FA_CHECK "  " : "   ") + b.mTitle;
+            
+            if (ImGui::Selectable(label.c_str(), isSelected,ImGuiSelectableFlags_SpanAvailWidth))
+            {
+                SetActiveBoard(b.mID);
+            }
+        }
+
+        ImGui::Spacing();
+        ImGui::Separator();
+        ImGui::Spacing();
+
+        if (ImGui::Selectable(ICON_FA_PLUS "  Create New Board",ImGuiSelectableFlags_SpanAvailWidth)) 
+        {
+            mIsCreatingBoard = true;
+            memset(mNewBoardTitleBuffer, 0, sizeof(mNewBoardTitleBuffer));
+        }
+
+        ImGui::Spacing();
+        ImGui::Separator();
+        ImGui::Spacing();
+
+        if (ImGui::Selectable(ICON_FA_GEAR "  Settings",ImGuiSelectableFlags_SpanAvailWidth)) {}
+        if (ImGui::Selectable(ICON_FA_CIRCLE_INFO "  About",ImGuiSelectableFlags_SpanAvailWidth)) {}
+
+            ImGui::PopStyleVar();
+        
         ImGui::EndPopup();
     }
+    ImGui::PopStyleColor(3);
+    ImGui::PopStyleVar(3);
 
     ImGui::EndChild();
     ImGui::PopStyleColor();
@@ -128,7 +225,9 @@ void Board::Render()
 
     float fullHeight = ImGui::GetContentRegionAvail().y;
 
-    for(int i = 0; i < (int)mCardLists.size(); ++i)
+    std::vector<CardList>& cardLists = activeBoard->mCardLists;
+
+    for(int i = 0; i < (int)cardLists.size(); ++i)
     {
         if (i > 0)
         {
@@ -137,12 +236,12 @@ void Board::Render()
         }
         
         // Pass fixed width and full available height
-        mCardLists[i].Render(i, ImVec2(cardListWidth, fullHeight - 20.0f * dpiScale)); // Slight bottom padding
+        cardLists[i].Render(i, ImVec2(cardListWidth, fullHeight - 20.0f * dpiScale)); // Slight bottom padding
     }
 
     // --- Add List UI ---
     ImGui::SameLine();
-    ImGui::SetCursorPosX(startX + (mCardLists.size() * (cardListWidth + spacingX)));
+    ImGui::SetCursorPosX(startX + (cardLists.size() * (cardListWidth + spacingX)));
     ImGui::SetCursorPosY(startY);
 
     if (!mIsAddingList)
@@ -182,7 +281,7 @@ void Board::Render()
         {
             if (strlen(mNewListTitleBuffer) > 0)
             {
-                mCardLists.emplace_back(mNewListTitleBuffer, std::vector<Card>{});
+                AddList(mNewListTitleBuffer);
                 mIsAddingList = false;
             }
         }
@@ -205,13 +304,9 @@ void Board::Render()
         ImGui::PopStyleColor();
     }
 
-    ImGui::EndChild();
+    ImGui::EndChild(); // End BoardContent
 
     FontManager::Push(FontFamily::Regular, FontSize::Regular);
-    // Note: DragDropManager calls were previously outside. 
-    // We should ensure they are called. 
-    // Since we are inside a child window now, we might need to be careful about coordinates if DragDropManager uses absolute.
-    // However, DragDropManager usually handles global state.
     
     DragDropManager::DrawTooltipOfDraggedItem();
     DragDropManager::UpdateDropZone();
@@ -222,6 +317,81 @@ void Board::Render()
         DragDropManager::PerformDropOperation();
     }
     FontManager::Pop();
+
+    // --- Create Board Popup ---
+    if (mIsCreatingBoard)
+    {
+        ImGui::OpenPopup("Create Board");
+        mIsCreatingBoard = false;
+    }
+
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(20 * dpiScale, 20 * dpiScale));
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 12.0f);
+    ImGui::SetNextWindowSize(ImVec2(400 * dpiScale, 0)); 
+    
+    if (ImGui::BeginPopupModal("Create Board", NULL, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove))
+    {
+        FontManager::Push(FontFamily::Bold, FontSize::Large);
+        ImGui::Text("Create New Board");
+        FontManager::Pop();
+        
+        ImGui::Spacing();
+        ImGui::Spacing();
+        
+        FontManager::Push(FontFamily::Regular, FontSize::Regular);
+        ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "Board Title");
+        
+        ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(10 * dpiScale, 10 * dpiScale));
+        ImGui::PushStyleColor(ImGuiCol_FrameBg, IM_COL32(20, 22, 26, 255));
+        ImGui::SetNextItemWidth(-1);
+        
+        if (ImGui::IsWindowAppearing()) ImGui::SetKeyboardFocusHere();
+        bool enter = ImGui::InputText("##BoardTitle", mNewBoardTitleBuffer, sizeof(mNewBoardTitleBuffer), ImGuiInputTextFlags_EnterReturnsTrue);
+        
+        ImGui::PopStyleColor();
+        ImGui::PopStyleVar();
+        FontManager::Pop(); // Regular
+        
+        ImGui::Spacing();
+        ImGui::Spacing();
+        ImGui::Spacing();
+        
+        // Buttons
+        float width = ImGui::GetContentRegionAvail().x;
+        float btnWidth = (width - 10.0f * dpiScale) * 0.5f;
+
+        // Cancel
+        ImGui::PushStyleColor(ImGuiCol_Button, IM_COL32(45, 45, 50, 255));
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, IM_COL32(60, 60, 65, 255));
+        ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 5.0f * dpiScale);
+        if (ImGui::Button("Cancel", ImVec2(btnWidth, 35 * dpiScale)) || ImGui::IsKeyPressed(ImGuiKey_Escape))
+        {
+            ImGui::CloseCurrentPopup();
+            mIsCreatingBoard = false;
+        }
+        ImGui::PopStyleColor(2);
+        
+        ImGui::SameLine();
+        
+        // Create
+        ImGui::PushStyleColor(ImGuiCol_Button, IM_COL32(59, 130, 246, 255));
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, IM_COL32(37, 99, 235, 255));
+        if (ImGui::Button("Create", ImVec2(btnWidth, 35 * dpiScale)) || enter)
+        {
+            if (strlen(mNewBoardTitleBuffer) > 0)
+            {
+                BoardData& newBoard = CreateBoard(mNewBoardTitleBuffer);
+                SetActiveBoard(newBoard.mID);
+                ImGui::CloseCurrentPopup();
+                mIsCreatingBoard = false;
+            }
+        }
+        ImGui::PopStyleColor(2);
+        ImGui::PopStyleVar(); // FrameRounding
+        
+        ImGui::EndPopup();
+    }
+    ImGui::PopStyleVar(2); // WindowPadding, WindowRounding
 
     ImGui::End();
     ImGui::PopStyleVar(3);

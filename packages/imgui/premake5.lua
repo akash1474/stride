@@ -3,8 +3,6 @@ project "ImGui"
 	language "C++"
 	staticruntime "On"
 	
-	defines { "IMGUI_ENABLE_TEST_ENGINE" }
-
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
 
@@ -16,7 +14,11 @@ project "ImGui"
 
 	links{"glfw"}
 
-	includedirs{".","../glfw/include","../freetype/include"}
+	includedirs{
+        ".",
+        "../glfw/include",
+        "../freetype/include"
+    }
 
 	filter "system:windows"
 		systemversion "latest"

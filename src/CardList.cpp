@@ -137,11 +137,11 @@ void CardList::ListHeader()
 void CardList::RenderCardPopup()
 {
     const float dpiScale = FontManager::GetDpiScale();
-    
+
     // Limit height to 85% of screen to allow scrolling if content is too large
     float maxHeight = ImGui::GetMainViewport()->WorkSize.y * 0.9f;
     ImGui::SetNextWindowSizeConstraints(
-        ImVec2(500 * dpiScale, 0), 
+        ImVec2(500 * dpiScale, 0),
         ImVec2(500 * dpiScale, maxHeight)
     );
 
@@ -152,7 +152,11 @@ void CardList::RenderCardPopup()
     ImGui::PushStyleColor(ImGuiCol_Border, IM_COL32(50, 50, 55, 255));
 
     std::string popupId = std::string("Card Popup##") + mUniqueID;
-    if (ImGui::BeginPopupModal(popupId.c_str(), NULL, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove))
+    if(ImGui::BeginPopupModal(
+           popupId.c_str(),
+           NULL,
+           ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove
+       ))
     {
         FontManager::Push(FontFamily::Bold, FontSize::Large);
         ImGui::Text(mEditingCardIndex == -1 ? "Create New Card" : "Edit Card");
@@ -169,10 +173,15 @@ void CardList::RenderCardPopup()
         ImGui::SetNextItemWidth(-1);
 
         // Focus input on first appear
-        if (ImGui::IsWindowAppearing())
+        if(ImGui::IsWindowAppearing())
             ImGui::SetKeyboardFocusHere();
 
-        bool enterPressed = ImGui::InputText("##CardTitle", mCardTitleBuffer, sizeof(mCardTitleBuffer), ImGuiInputTextFlags_EnterReturnsTrue);
+        bool enterPressed = ImGui::InputText(
+            "##CardTitle",
+            mCardTitleBuffer,
+            sizeof(mCardTitleBuffer),
+            ImGuiInputTextFlags_EnterReturnsTrue
+        );
         ImGui::PopStyleColor();
         ImGui::PopStyleVar();
         FontManager::Pop();
@@ -186,8 +195,13 @@ void CardList::RenderCardPopup()
         ImGui::PushStyleColor(ImGuiCol_FrameBg, IM_COL32(16, 18, 20, 255));
         ImGui::SetNextItemWidth(-1);
 
-        ImGui::InputTextMultiline("##CardDescription", mCardDescriptionBuffer, sizeof(mCardDescriptionBuffer),
-                                  ImVec2(-1, 150 * dpiScale), ImGuiInputTextFlags_None | ImGuiInputTextFlags_WordWrap);
+        ImGui::InputTextMultiline(
+            "##CardDescription",
+            mCardDescriptionBuffer,
+            sizeof(mCardDescriptionBuffer),
+            ImVec2(-1, 150 * dpiScale),
+            ImGuiInputTextFlags_None | ImGuiInputTextFlags_WordWrap
+        );
         ImGui::PopStyleColor();
         ImGui::PopStyleVar();
 
@@ -199,11 +213,11 @@ void CardList::RenderCardPopup()
         ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "Badges");
 
         // Selected Badges
-        if (!mCardBadges.empty())
+        if(!mCardBadges.empty())
         {
             ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(5, 5));
             bool isFirst = true;
-            for (auto it = mCardBadges.begin(); it != mCardBadges.end(); )
+            for(auto it = mCardBadges.begin(); it != mCardBadges.end();)
             {
                 // Calculate estimated width
                 ImVec2 text_size = ImGui::CalcTextSize(it->c_str());
@@ -212,18 +226,19 @@ void CardList::RenderCardPopup()
                 ImVec2 icon_size = ImGui::CalcTextSize(ICON_FA_XMARK);
                 float width = text_size.x + (padding_x * 2.0f) + icon_size.x + icon_spacing;
 
-                if (!isFirst)
+                if(!isFirst)
                 {
                     float last_x2 = ImGui::GetItemRectMax().x;
                     float next_x2 = last_x2 + ImGui::GetStyle().ItemSpacing.x + width;
-                    float window_max_x = ImGui::GetWindowPos().x + ImGui::GetWindowContentRegionMax().x;
+                    float window_max_x
+                        = ImGui::GetWindowPos().x + ImGui::GetWindowContentRegionMax().x;
 
-                    if (next_x2 < window_max_x)
+                    if(next_x2 < window_max_x)
                         ImGui::SameLine();
                 }
 
                 BadgeColors::BadgeStyle style = BadgeColors::GetBadgeStyleForText(*it);
-                if (Components::Badge(it->c_str(), style, true))
+                if(Components::Badge(it->c_str(), style, true))
                 {
                     it = mCardBadges.erase(it);
                     // If we erased, we still rendered this frame, so next item is not first
@@ -241,34 +256,38 @@ void CardList::RenderCardPopup()
 
         // Available Badges
         ImGui::TextColored(ImVec4(0.5f, 0.5f, 0.5f, 1.0f), "Add Badge:");
-        const char* availableBadges[] = { "Bug", "Feature", "Urgent", "Design", "Dev", "Test", "High Priority", "Low Priority" };
+        const char* availableBadges[] = { "Bug", "Feature", "Urgent",        "Design",
+                                          "Dev", "Test",    "High Priority", "Low Priority" };
 
         ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(5, 5));
         bool isFirst = true;
-        for (const char* badge : availableBadges)
+        for(const char* badge : availableBadges)
         {
             // Check if already selected
             bool selected = false;
-            for(const auto& b : mCardBadges) if(b == badge) selected = true;
-            if(selected) continue;
+            for(const auto& b : mCardBadges)
+                if(b == badge)
+                    selected = true;
+            if(selected)
+                continue;
 
             // Calculate estimated width (removable=false)
             ImVec2 text_size = ImGui::CalcTextSize(badge);
             float padding_x = 8.0f * dpiScale;
             float width = text_size.x + (padding_x * 2.0f);
 
-            if (!isFirst)
+            if(!isFirst)
             {
                 float last_x2 = ImGui::GetItemRectMax().x;
                 float next_x2 = last_x2 + ImGui::GetStyle().ItemSpacing.x + width;
                 float window_max_x = ImGui::GetWindowPos().x + ImGui::GetWindowContentRegionMax().x;
 
-                if (next_x2 < window_max_x)
+                if(next_x2 < window_max_x)
                     ImGui::SameLine();
             }
 
             BadgeColors::BadgeStyle style = BadgeColors::GetBadgeStyleForText(badge);
-            if (Components::Badge(badge, style, false))
+            if(Components::Badge(badge, style, false))
             {
                 mCardBadges.push_back(badge);
             }
@@ -286,15 +305,18 @@ void CardList::RenderCardPopup()
         // --- Checklist Section ---
         // --- Checklist Section ---
         ImGui::Text("Checklist");
-        
+
         int completed = 0;
-        for (const auto& item : mTempChecklist) if (item.isChecked) completed++;
-        float progress = mTempChecklist.empty() ? 0.0f : (float)completed / (float)mTempChecklist.size();
+        for(const auto& item : mTempChecklist)
+            if(item.isChecked)
+                completed++;
+        float progress
+            = mTempChecklist.empty() ? 0.0f : (float)completed / (float)mTempChecklist.size();
 
         ImGui::SameLine();
         char progressOverlay[32];
         sprintf_s(progressOverlay, "%d/%d", completed, (int)mTempChecklist.size());
-        
+
         float availWidth = ImGui::GetContentRegionAvail().x;
         float textWidth = ImGui::CalcTextSize(progressOverlay).x;
         ImGui::SetCursorPosX(ImGui::GetCursorPosX() + availWidth - textWidth);
@@ -306,31 +328,46 @@ void CardList::RenderCardPopup()
         ImGui::Spacing();
 
         // Checklist Items
-        ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 8 * dpiScale)); // Spacing between items
-        for (int i = 0; i < (int)mTempChecklist.size(); ++i)
+        ImGui::PushStyleVar(
+            ImGuiStyleVar_ItemSpacing,
+            ImVec2(0, 8 * dpiScale)
+        ); // Spacing between items
+        for(int i = 0; i < (int)mTempChecklist.size(); ++i)
         {
             ImGui::PushID(i);
             auto& item = mTempChecklist[i];
             bool deleted = false;
-            
-            Components::ChecklistItem(item.text.c_str(), &item.isChecked, &deleted, ImGui::GetContentRegionAvail().x);
 
-            if (deleted)
+            Components::ChecklistItem(
+                item.text.c_str(),
+                &item.isChecked,
+                &deleted,
+                ImGui::GetContentRegionAvail().x
+            );
+
+            if(deleted)
             {
                 mTempChecklist.erase(mTempChecklist.begin() + i);
                 i--;
             }
-            
+
             ImGui::PopID();
         }
         ImGui::PopStyleVar();
 
         // Add New Item
         ImGui::Spacing();
-        
-        if (Components::InputWithIcon("##newItem", ICON_FA_PLUS, "Add an item...", mChecklistInputBuffer, sizeof(mChecklistInputBuffer), ImGui::GetContentRegionAvail().x))
+
+        if(Components::InputWithIcon(
+               "##newItem",
+               ICON_FA_PLUS,
+               "Add an item...",
+               mChecklistInputBuffer,
+               sizeof(mChecklistInputBuffer),
+               ImGui::GetContentRegionAvail().x
+           ))
         {
-            if (strlen(mChecklistInputBuffer) > 0)
+            if(strlen(mChecklistInputBuffer) > 0)
             {
                 mTempChecklist.push_back({ mChecklistInputBuffer, false });
                 memset(mChecklistInputBuffer, 0, sizeof(mChecklistInputBuffer));
@@ -353,7 +390,13 @@ void CardList::RenderCardPopup()
         FontManager::Push(FontFamily::SemiBold, FontSize::Regular);
 
         // Cancel Button
-        if (Components::StyledButton("Cancel", ImVec2(btnWidth, 35 * dpiScale), IM_COL32(45, 45, 50, 255), IM_COL32(60, 60, 65, 255)) || ImGui::IsKeyPressed(ImGuiKey_Escape))
+        if(Components::StyledButton(
+               "Cancel",
+               ImVec2(btnWidth, 35 * dpiScale),
+               IM_COL32(45, 45, 50, 255),
+               IM_COL32(60, 60, 65, 255)
+           )
+           || ImGui::IsKeyPressed(ImGuiKey_Escape))
         {
             ImGui::CloseCurrentPopup();
         }
@@ -362,17 +405,23 @@ void CardList::RenderCardPopup()
 
         // Save/Create Button
         const char* btnText = mEditingCardIndex == -1 ? "Create" : "Save";
-        if (Components::StyledButton(btnText, ImVec2(btnWidth, 35 * dpiScale), IM_COL32(59, 130, 246, 255), IM_COL32(37, 99, 235, 255)) || enterPressed)
+        if(Components::StyledButton(
+               btnText,
+               ImVec2(btnWidth, 35 * dpiScale),
+               IM_COL32(59, 130, 246, 255),
+               IM_COL32(37, 99, 235, 255)
+           )
+           || enterPressed)
         {
-            if (strlen(mCardTitleBuffer) > 0)
+            if(strlen(mCardTitleBuffer) > 0)
             {
-                if (mEditingCardIndex == -1)
+                if(mEditingCardIndex == -1)
                 {
                     Card newCard(mCardTitleBuffer, mCardDescriptionBuffer, mCardBadges);
                     newCard.mChecklist = mTempChecklist;
                     mCards.push_back(std::move(newCard));
                 }
-                else if (mEditingCardIndex >= 0 && mEditingCardIndex < (int)mCards.size())
+                else if(mEditingCardIndex >= 0 && mEditingCardIndex < (int)mCards.size())
                 {
                     mCards[mEditingCardIndex].mTitle = mCardTitleBuffer;
                     mCards[mEditingCardIndex].mDescription = mCardDescriptionBuffer;
@@ -396,7 +445,7 @@ bool CardList::RenderCardListFooter()
 {
     const float dpiScale = FontManager::GetDpiScale();
     ImGui::BeginChild("##Footer", ImVec2(ImGui::GetContentRegionAvail().x, 60.0f));
-    ImGui::PushStyleColor(ImGuiCol_Button, IM_COL32(0, 0, 0, 0)); // Transparent
+    ImGui::PushStyleColor(ImGuiCol_Button, IM_COL32(0, 0, 0, 0));               // Transparent
     ImGui::PushStyleColor(ImGuiCol_ButtonHovered, IM_COL32(255, 255, 255, 20)); // Subtle hover
     ImGui::PushStyleColor(ImGuiCol_ButtonActive, IM_COL32(255, 255, 255, 40));
     ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(150, 150, 150, 255)); // Grey text
@@ -404,7 +453,7 @@ bool CardList::RenderCardListFooter()
     const float width = 256.0f * dpiScale;
     float x_center = (ImGui::GetContentRegionAvail().x - width) * 0.5f;
     ImGui::SetCursorPosX(ImGui::GetCursorPosX() + x_center);
-    
+
     // Align text to left
     ImGui::PushStyleVar(ImGuiStyleVar_ButtonTextAlign, ImVec2(0.5f, 0.5f));
     if(ImGui::Button(ICON_FA_PLUS "  Add a card", { width, 35.0f }))
@@ -439,9 +488,9 @@ void CardList::Render(int list_id, ImVec2 size)
     ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 10.0f);
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, { 0.0f, 0.0f });
     ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-    
+
     // Use BeginChild instead of Begin for layout within the board
-    // IMPORTANT: NoScrollbar here to prevent double scrollbars. 
+    // IMPORTANT: NoScrollbar here to prevent double scrollbars.
     // The inner content will handle scrolling.
     ImGui::BeginChild(
         (std::string("CardList_") + mUniqueID).c_str(),
@@ -451,7 +500,13 @@ void CardList::Render(int list_id, ImVec2 size)
     );
 
     // Register list bounds for drag and drop logic
-    ImRect listRect(ImGui::GetWindowPos(), ImVec2(ImGui::GetWindowPos().x + ImGui::GetWindowSize().x, ImGui::GetWindowPos().y + ImGui::GetWindowSize().y));
+    ImRect listRect(
+        ImGui::GetWindowPos(),
+        ImVec2(
+            ImGui::GetWindowPos().x + ImGui::GetWindowSize().x,
+            ImGui::GetWindowPos().y + ImGui::GetWindowSize().y
+        )
+    );
     DragDropManager::RegisterListBounds(list_id, listRect);
 
     // Make inner children transparent so they don't cover the rounded corners of the parent
@@ -469,12 +524,13 @@ void CardList::Render(int list_id, ImVec2 size)
     float availableHeight = size.y - yAfterHeader - footerHeight + spacing;
 
     // Ensure we have some minimum height
-    if (availableHeight < 100.0f) availableHeight = 100.0f;
+    if(availableHeight < 100.0f)
+        availableHeight = 100.0f;
 
     ImGui::BeginChild(
         (std::string("CardContainer_") + mTitle).c_str(),
         ImVec2(0, availableHeight),
-        false, 
+        false,
         ImGuiWindowFlags_None // Allow scrolling here
     );
 
@@ -530,7 +586,11 @@ void CardList::Render(int list_id, ImVec2 size)
                         moving_card->mTitle.c_str(),
                         moving_card->mBadges,
                         !moving_card->mDescription.empty(),
-                        (int)std::count_if(moving_card->mChecklist.begin(), moving_card->mChecklist.end(), [](const auto& i){ return i.isChecked; }),
+                        (int)std::count_if(
+                            moving_card->mChecklist.begin(),
+                            moving_card->mChecklist.end(),
+                            [](const auto& i) { return i.isChecked; }
+                        ),
                         (int)moving_card->mChecklist.size(),
                         true // render as placeholder
                     );
@@ -554,17 +614,26 @@ void CardList::Render(int list_id, ImVec2 size)
             float x_center = (ImGui::GetContentRegionAvail().x - 256.0f * dpiScale) * 0.5f;
             ImGui::SetCursorPosX(ImGui::GetCursorPosX() + x_center);
             int completed = 0;
-            for(const auto& item : mCards[i].mChecklist) if(item.isChecked) completed++;
-            Card::Render(card_id.c_str(), mCards[i].mTitle.c_str(), mCards[i].mBadges, !mCards[i].mDescription.empty(), completed, (int)mCards[i].mChecklist.size());
+            for(const auto& item : mCards[i].mChecklist)
+                if(item.isChecked)
+                    completed++;
+            Card::Render(
+                card_id.c_str(),
+                mCards[i].mTitle.c_str(),
+                mCards[i].mBadges,
+                !mCards[i].mDescription.empty(),
+                completed,
+                (int)mCards[i].mChecklist.size()
+            );
 
             if(ImGui::IsItemHovered())
                 ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
 
-            if (ImGui::IsItemHovered() && ImGui::IsMouseReleased(ImGuiMouseButton_Left))
+            if(ImGui::IsItemHovered() && ImGui::IsMouseReleased(ImGuiMouseButton_Left))
             {
                 // Only open if we didn't drag
-                if (ImGui::GetMouseDragDelta(ImGuiMouseButton_Left, 0.0f).x == 0.0f &&
-                    ImGui::GetMouseDragDelta(ImGuiMouseButton_Left, 0.0f).y == 0.0f)
+                if(ImGui::GetMouseDragDelta(ImGuiMouseButton_Left, 0.0f).x == 0.0f
+                   && ImGui::GetMouseDragDelta(ImGuiMouseButton_Left, 0.0f).y == 0.0f)
                 {
                     mShowCardPopup = true;
                     mEditingCardIndex = (int)i;
@@ -592,13 +661,15 @@ void CardList::Render(int list_id, ImVec2 size)
 
     ImGui::EndChild(); // End CardContainer
 
-    bool tOpenNewCardList = ImGui::IsItemHovered(ImGuiHoveredFlags_RectOnly) && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left);
-    if(tOpenNewCardList){
+    bool tOpenNewCardList = ImGui::IsItemHovered(ImGuiHoveredFlags_RectOnly)
+                            && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left);
+    if(tOpenNewCardList)
+    {
         ResetCardListState();
     }
 
     RenderCardListFooter();
-    if (mShowCardPopup || tOpenNewCardList)
+    if(mShowCardPopup || tOpenNewCardList)
     {
         ImGui::OpenPopup((std::string("Card Popup##") + mUniqueID).c_str());
         mShowCardPopup = false;
@@ -606,12 +677,13 @@ void CardList::Render(int list_id, ImVec2 size)
     RenderCardPopup();
 
     ImGui::PopStyleColor(); // Pop transparent ChildBg
-    ImGui::EndChild(); // End CardList
+    ImGui::EndChild();      // End CardList
 
     ImGui::PopStyleColor(2); // ChildBg, WindowBg
     ImGui::PopStyleVar(3);
 }
-void CardList::ResetCardListState(){
+void CardList::ResetCardListState()
+{
     mEditingCardIndex = -1;
     memset(mCardTitleBuffer, 0, sizeof(mCardTitleBuffer));
     memset(mCardDescriptionBuffer, 0, sizeof(mCardDescriptionBuffer));

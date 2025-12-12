@@ -1,8 +1,10 @@
 #pragma once
 #include <imgui.h>
 
-struct ColorPalette {
-    struct Slate {
+struct ColorPalette
+{
+    struct Slate
+    {
         static constexpr ImU32 Shade50 = IM_COL32(248, 250, 252, 255);
         static constexpr ImU32 Shade100 = IM_COL32(241, 245, 249, 255);
         static constexpr ImU32 Shade200 = IM_COL32(226, 232, 240, 255);
@@ -15,7 +17,8 @@ struct ColorPalette {
         static constexpr ImU32 Shade900 = IM_COL32(15, 23, 42, 255);
         static constexpr ImU32 Shade950 = IM_COL32(2, 6, 23, 255);
     };
-    struct Gray {
+    struct Gray
+    {
         static constexpr ImU32 Shade50 = IM_COL32(249, 250, 251, 255);
         static constexpr ImU32 Shade100 = IM_COL32(243, 244, 246, 255);
         static constexpr ImU32 Shade200 = IM_COL32(229, 231, 235, 255);
@@ -28,7 +31,8 @@ struct ColorPalette {
         static constexpr ImU32 Shade900 = IM_COL32(17, 24, 39, 255);
         static constexpr ImU32 Shade950 = IM_COL32(3, 7, 18, 255);
     };
-    struct Zinc {
+    struct Zinc
+    {
         static constexpr ImU32 Shade50 = IM_COL32(250, 250, 250, 255);
         static constexpr ImU32 Shade100 = IM_COL32(244, 244, 245, 255);
         static constexpr ImU32 Shade200 = IM_COL32(228, 228, 231, 255);
@@ -41,7 +45,8 @@ struct ColorPalette {
         static constexpr ImU32 Shade900 = IM_COL32(24, 24, 27, 255);
         static constexpr ImU32 Shade950 = IM_COL32(9, 9, 11, 255);
     };
-    struct Neutral {
+    struct Neutral
+    {
         static constexpr ImU32 Shade50 = IM_COL32(250, 250, 250, 255);
         static constexpr ImU32 Shade100 = IM_COL32(245, 245, 245, 255);
         static constexpr ImU32 Shade200 = IM_COL32(229, 229, 229, 255);
@@ -54,7 +59,8 @@ struct ColorPalette {
         static constexpr ImU32 Shade900 = IM_COL32(23, 23, 23, 255);
         static constexpr ImU32 Shade950 = IM_COL32(10, 10, 10, 255);
     };
-    struct Stone {
+    struct Stone
+    {
         static constexpr ImU32 Shade50 = IM_COL32(250, 250, 249, 255);
         static constexpr ImU32 Shade100 = IM_COL32(245, 245, 244, 255);
         static constexpr ImU32 Shade200 = IM_COL32(231, 229, 228, 255);
@@ -67,7 +73,8 @@ struct ColorPalette {
         static constexpr ImU32 Shade900 = IM_COL32(28, 25, 23, 255);
         static constexpr ImU32 Shade950 = IM_COL32(12, 10, 9, 255);
     };
-    struct Red {
+    struct Red
+    {
         static constexpr ImU32 Shade50 = IM_COL32(254, 242, 242, 255);
         static constexpr ImU32 Shade100 = IM_COL32(254, 226, 226, 255);
         static constexpr ImU32 Shade200 = IM_COL32(254, 202, 202, 255);
@@ -80,7 +87,8 @@ struct ColorPalette {
         static constexpr ImU32 Shade900 = IM_COL32(127, 29, 29, 255);
         static constexpr ImU32 Shade950 = IM_COL32(69, 10, 10, 255);
     };
-    struct Orange {
+    struct Orange
+    {
         static constexpr ImU32 Shade50 = IM_COL32(255, 247, 237, 255);
         static constexpr ImU32 Shade100 = IM_COL32(255, 237, 213, 255);
         static constexpr ImU32 Shade200 = IM_COL32(254, 215, 170, 255);
@@ -93,7 +101,8 @@ struct ColorPalette {
         static constexpr ImU32 Shade900 = IM_COL32(124, 45, 18, 255);
         static constexpr ImU32 Shade950 = IM_COL32(67, 20, 7, 255);
     };
-    struct Amber {
+    struct Amber
+    {
         static constexpr ImU32 Shade50 = IM_COL32(255, 251, 235, 255);
         static constexpr ImU32 Shade100 = IM_COL32(254, 243, 199, 255);
         static constexpr ImU32 Shade200 = IM_COL32(253, 230, 138, 255);
@@ -106,7 +115,8 @@ struct ColorPalette {
         static constexpr ImU32 Shade900 = IM_COL32(120, 53, 15, 255);
         static constexpr ImU32 Shade950 = IM_COL32(69, 26, 3, 255);
     };
-    struct Yellow {
+    struct Yellow
+    {
         static constexpr ImU32 Shade50 = IM_COL32(254, 252, 232, 255);
         static constexpr ImU32 Shade100 = IM_COL32(254, 249, 195, 255);
         static constexpr ImU32 Shade200 = IM_COL32(254, 240, 138, 255);
@@ -119,7 +129,8 @@ struct ColorPalette {
         static constexpr ImU32 Shade900 = IM_COL32(113, 63, 18, 255);
         static constexpr ImU32 Shade950 = IM_COL32(66, 32, 6, 255);
     };
-    struct Lime {
+    struct Lime
+    {
         static constexpr ImU32 Shade50 = IM_COL32(247, 254, 231, 255);
         static constexpr ImU32 Shade100 = IM_COL32(236, 252, 203, 255);
         static constexpr ImU32 Shade200 = IM_COL32(217, 249, 157, 255);
@@ -132,7 +143,8 @@ struct ColorPalette {
         static constexpr ImU32 Shade900 = IM_COL32(54, 83, 20, 255);
         static constexpr ImU32 Shade950 = IM_COL32(26, 46, 5, 255);
     };
-    struct Green {
+    struct Green
+    {
         static constexpr ImU32 Shade50 = IM_COL32(240, 253, 244, 255);
         static constexpr ImU32 Shade100 = IM_COL32(220, 252, 231, 255);
         static constexpr ImU32 Shade200 = IM_COL32(187, 247, 208, 255);
@@ -145,7 +157,8 @@ struct ColorPalette {
         static constexpr ImU32 Shade900 = IM_COL32(20, 83, 45, 255);
         static constexpr ImU32 Shade950 = IM_COL32(5, 46, 22, 255);
     };
-    struct Emerald {
+    struct Emerald
+    {
         static constexpr ImU32 Shade50 = IM_COL32(236, 253, 245, 255);
         static constexpr ImU32 Shade100 = IM_COL32(209, 250, 229, 255);
         static constexpr ImU32 Shade200 = IM_COL32(167, 243, 208, 255);
@@ -158,7 +171,8 @@ struct ColorPalette {
         static constexpr ImU32 Shade900 = IM_COL32(6, 78, 59, 255);
         static constexpr ImU32 Shade950 = IM_COL32(2, 44, 34, 255);
     };
-    struct Teal {
+    struct Teal
+    {
         static constexpr ImU32 Shade50 = IM_COL32(240, 253, 250, 255);
         static constexpr ImU32 Shade100 = IM_COL32(204, 251, 241, 255);
         static constexpr ImU32 Shade200 = IM_COL32(153, 246, 228, 255);
@@ -171,7 +185,8 @@ struct ColorPalette {
         static constexpr ImU32 Shade900 = IM_COL32(19, 78, 74, 255);
         static constexpr ImU32 Shade950 = IM_COL32(4, 47, 46, 255);
     };
-    struct Cyan {
+    struct Cyan
+    {
         static constexpr ImU32 Shade50 = IM_COL32(236, 254, 255, 255);
         static constexpr ImU32 Shade100 = IM_COL32(207, 250, 254, 255);
         static constexpr ImU32 Shade200 = IM_COL32(165, 243, 252, 255);
@@ -184,7 +199,8 @@ struct ColorPalette {
         static constexpr ImU32 Shade900 = IM_COL32(22, 78, 99, 255);
         static constexpr ImU32 Shade950 = IM_COL32(8, 51, 68, 255);
     };
-    struct Sky {
+    struct Sky
+    {
         static constexpr ImU32 Shade50 = IM_COL32(240, 249, 255, 255);
         static constexpr ImU32 Shade100 = IM_COL32(224, 242, 254, 255);
         static constexpr ImU32 Shade200 = IM_COL32(186, 230, 253, 255);
@@ -197,7 +213,8 @@ struct ColorPalette {
         static constexpr ImU32 Shade900 = IM_COL32(12, 74, 110, 255);
         static constexpr ImU32 Shade950 = IM_COL32(8, 47, 73, 255);
     };
-    struct Blue {
+    struct Blue
+    {
         static constexpr ImU32 Shade50 = IM_COL32(239, 246, 255, 255);
         static constexpr ImU32 Shade100 = IM_COL32(219, 234, 254, 255);
         static constexpr ImU32 Shade200 = IM_COL32(191, 219, 254, 255);
@@ -210,7 +227,8 @@ struct ColorPalette {
         static constexpr ImU32 Shade900 = IM_COL32(30, 58, 138, 255);
         static constexpr ImU32 Shade950 = IM_COL32(23, 37, 84, 255);
     };
-    struct Indigo {
+    struct Indigo
+    {
         static constexpr ImU32 Shade50 = IM_COL32(238, 242, 255, 255);
         static constexpr ImU32 Shade100 = IM_COL32(224, 231, 255, 255);
         static constexpr ImU32 Shade200 = IM_COL32(199, 210, 254, 255);
@@ -223,7 +241,8 @@ struct ColorPalette {
         static constexpr ImU32 Shade900 = IM_COL32(49, 46, 129, 255);
         static constexpr ImU32 Shade950 = IM_COL32(30, 27, 75, 255);
     };
-    struct Violet {
+    struct Violet
+    {
         static constexpr ImU32 Shade50 = IM_COL32(245, 243, 255, 255);
         static constexpr ImU32 Shade100 = IM_COL32(237, 233, 254, 255);
         static constexpr ImU32 Shade200 = IM_COL32(221, 214, 254, 255);
@@ -236,7 +255,8 @@ struct ColorPalette {
         static constexpr ImU32 Shade900 = IM_COL32(76, 29, 149, 255);
         static constexpr ImU32 Shade950 = IM_COL32(46, 16, 101, 255);
     };
-    struct Purple {
+    struct Purple
+    {
         static constexpr ImU32 Shade50 = IM_COL32(250, 245, 255, 255);
         static constexpr ImU32 Shade100 = IM_COL32(243, 232, 255, 255);
         static constexpr ImU32 Shade200 = IM_COL32(233, 213, 255, 255);
@@ -249,7 +269,8 @@ struct ColorPalette {
         static constexpr ImU32 Shade900 = IM_COL32(88, 28, 135, 255);
         static constexpr ImU32 Shade950 = IM_COL32(59, 7, 100, 255);
     };
-    struct Fuchsia {
+    struct Fuchsia
+    {
         static constexpr ImU32 Shade50 = IM_COL32(253, 244, 255, 255);
         static constexpr ImU32 Shade100 = IM_COL32(250, 232, 255, 255);
         static constexpr ImU32 Shade200 = IM_COL32(245, 208, 254, 255);
@@ -262,7 +283,8 @@ struct ColorPalette {
         static constexpr ImU32 Shade900 = IM_COL32(112, 26, 117, 255);
         static constexpr ImU32 Shade950 = IM_COL32(74, 4, 78, 255);
     };
-    struct Pink {
+    struct Pink
+    {
         static constexpr ImU32 Shade50 = IM_COL32(253, 242, 248, 255);
         static constexpr ImU32 Shade100 = IM_COL32(252, 231, 243, 255);
         static constexpr ImU32 Shade200 = IM_COL32(251, 207, 232, 255);
@@ -275,7 +297,8 @@ struct ColorPalette {
         static constexpr ImU32 Shade900 = IM_COL32(131, 24, 67, 255);
         static constexpr ImU32 Shade950 = IM_COL32(80, 7, 36, 255);
     };
-    struct Rose {
+    struct Rose
+    {
         static constexpr ImU32 Shade50 = IM_COL32(255, 241, 242, 255);
         static constexpr ImU32 Shade100 = IM_COL32(255, 228, 230, 255);
         static constexpr ImU32 Shade200 = IM_COL32(254, 205, 211, 255);

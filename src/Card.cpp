@@ -8,7 +8,15 @@
 #include <vector>
 #include <string>
 
-void Card::Render(const char* unique_id, const char* title, const std::vector<std::string>& badges, bool hasDescription, int checklistCompleted, int checklistTotal, bool isDragging)
+void Card::Render(
+    const char* unique_id,
+    const char* title,
+    const std::vector<std::string>& badges,
+    bool hasDescription,
+    int checklistCompleted,
+    int checklistTotal,
+    bool isDragging
+)
 {
     const float dpiScale = FontManager::GetDpiScale();
     ImGuiWindow* window = ImGui::GetCurrentWindow();
@@ -48,9 +56,11 @@ void Card::Render(const char* unique_id, const char* title, const std::vector<st
 
     // Add checklist badge to height calculation
     bool hasChecklist = checklistTotal > 0;
-    if (hasChecklist)
+    if(hasChecklist)
     {
-        std::string check_str = std::string(ICON_FA_SQUARE_CHECK " ") + std::to_string(checklistCompleted) + "/" + std::to_string(checklistTotal);
+        std::string check_str = std::string(ICON_FA_SQUARE_CHECK " ")
+                                + std::to_string(checklistCompleted) + "/"
+                                + std::to_string(checklistTotal);
         ImVec2 badge_size = ImGui::CalcTextSize(check_str.c_str());
         badge_size.x += badge_padding * 2;
 
@@ -66,7 +76,7 @@ void Card::Render(const char* unique_id, const char* title, const std::vector<st
     }
 
     // Add description badge to height calculation
-    if (hasDescription)
+    if(hasDescription)
     {
         const char* desc_text = ICON_FA_ALIGN_LEFT " Description";
         ImVec2 badge_size = ImGui::CalcTextSize(desc_text);
@@ -108,8 +118,13 @@ void Card::Render(const char* unique_id, const char* title, const std::vector<st
     if(is_hovered)
         border_color = IM_COL32(255, 255, 255, 255);
 
-    window->DrawList->AddRectFilled(bb.Min, bb.Max, IM_COL32(34, 39, 43, 255), 8.0f); // Lighter background, more rounding
-    window->DrawList->AddRect(bb.Min, bb.Max, border_color, 5.0f, 0, 2.0f);           // Border
+    window->DrawList->AddRectFilled(
+        bb.Min,
+        bb.Max,
+        IM_COL32(34, 39, 43, 255),
+        8.0f
+    ); // Lighter background, more rounding
+    window->DrawList->AddRect(bb.Min, bb.Max, border_color, 5.0f, 0, 2.0f); // Border
 
     if(isDragging) // Just render the card not it's elements
         return;
@@ -159,13 +174,15 @@ void Card::Render(const char* unique_id, const char* title, const std::vector<st
     }
 
     // --- Checklist Badge ---
-    if (hasChecklist)
+    if(hasChecklist)
     {
-        std::string check_str = std::string(ICON_FA_SQUARE_CHECK " ") + std::to_string(checklistCompleted) + "/" + std::to_string(checklistTotal);
-        
+        std::string check_str = std::string(ICON_FA_SQUARE_CHECK " ")
+                                + std::to_string(checklistCompleted) + "/"
+                                + std::to_string(checklistTotal);
+
         // Green style for checklist
         BadgeColors::BadgeStyle badgeColor;
-        badgeColor.bg = IM_COL32(34, 197, 94, 255); // Green-500
+        badgeColor.bg = IM_COL32(34, 197, 94, 255);     // Green-500
         badgeColor.text = IM_COL32(255, 255, 255, 255); // White text
 
         ImVec2 badge_size = ImGui::CalcTextSize(check_str.c_str());
@@ -197,12 +214,12 @@ void Card::Render(const char* unique_id, const char* title, const std::vector<st
     }
 
     // --- Description Badge ---
-    if (hasDescription)
+    if(hasDescription)
     {
         const char* desc_text = ICON_FA_ALIGN_LEFT " Description";
         // Use a neutral/gray style for description badge
         BadgeColors::BadgeStyle badgeColor;
-        badgeColor.bg = IM_COL32(45, 45, 50, 255); // Dark gray bg
+        badgeColor.bg = IM_COL32(45, 45, 50, 255);      // Dark gray bg
         badgeColor.text = IM_COL32(180, 180, 180, 255); // Light gray text
 
         ImVec2 badge_size = ImGui::CalcTextSize(desc_text);

@@ -4,8 +4,9 @@
 #include "imgui.h"
 
 
-class CardList{
-    public:
+class CardList
+{
+  public:
     std::vector<Card> mCards;
     std::string mTitle;
 
@@ -13,7 +14,7 @@ class CardList{
 
     void Render(int list_id, ImVec2 size);
 
-private:
+  private:
     char mTitleBuffer[256] = "";
     bool mIsEditingTitle = false;
     std::string mUniqueID;
@@ -26,7 +27,7 @@ private:
     char mCardDescriptionBuffer[1024] = "";
     char mBadgeInputBuffer[64] = "";
     std::vector<std::string> mCardBadges;
-    
+
     // Checklist state
     std::vector<Card::ChecklistItem> mTempChecklist;
     char mChecklistInputBuffer[256] = "";

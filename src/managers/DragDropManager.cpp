@@ -4,6 +4,9 @@
 #include "imgui_internal.h"
 #include "managers/DragDropManager.h"
 #include "managers/BoardManager.h"
+#include "renderers/CardRenderer.h"
+
+using Stride::CardRenderer;
 
 void DragDropManager::DrawTooltipOfDraggedItem()
 {
@@ -14,16 +17,15 @@ void DragDropManager::DrawTooltipOfDraggedItem()
     {
         const DragDropPayload* d = (const DragDropPayload*)global_payload->Data;
         Card* card = GetCard(d->source_list_id, d->card_index);
-        
+
         if(card)
         {
             ImGui::PushStyleVar(ImGuiStyleVar_Alpha, 0.7f);
             ImGui::BeginTooltip();
             std::string preview_id = std::string("preview_tooltip");
-            Card::Render(
+            CardRenderer::Render(
+                *card,
                 preview_id.c_str(),
-                card->mTitle.c_str(),
-                card->mBadges,
                 false // isDragging false for tooltip to show content
             );
             ImGui::EndTooltip();
@@ -35,22 +37,23 @@ void DragDropManager::DrawTooltipOfDraggedItem()
 void DragDropManager::PerformDropOperation()
 {
     DragOperation& aDragOperation = Get().mDragOperation;
-    
+
     // Access lists via BoardManager
     BoardData* activeBoard = BoardManager::Get().GetActiveBoard();
-    if (!activeBoard) return;
+    if(!activeBoard)
+        return;
 
     std::vector<CardList>& lists = activeBoard->mCardLists;
-    
-    if (aDragOperation.source_list_id < 0 || aDragOperation.source_list_id >= (int)lists.size() ||
-        aDragOperation.target_list_id < 0 || aDragOperation.target_list_id >= (int)lists.size())
+
+    if(aDragOperation.source_list_id < 0 || aDragOperation.source_list_id >= (int)lists.size()
+       || aDragOperation.target_list_id < 0 || aDragOperation.target_list_id >= (int)lists.size())
     {
         aDragOperation.Reset();
         return;
     }
 
-    std::vector<Card>* source_list = &lists[aDragOperation.source_list_id].mCards;
-    std::vector<Card>* target_list = &lists[aDragOperation.target_list_id].mCards;
+    std::vector<Card>* source_list = &lists[aDragOperation.source_list_id].cards;
+    std::vector<Card>* target_list = &lists[aDragOperation.target_list_id].cards;
 
     if(aDragOperation.source_index >= 0 && aDragOperation.source_index < (int)source_list->size())
     {
@@ -76,20 +79,14 @@ void DragDropManager::PerformDropOperation()
     aDragOperation.Reset();
 }
 
-void DragDropManager::UpdateDropZone()
-{
-    Get().mCurrentDropZonePtr = FindCurrentDropzone();
-}
+void DragDropManager::UpdateDropZone() { Get().mCurrentDropZonePtr = FindCurrentDropzone(); }
 
 void DragDropManager::RegisterListBounds(int list_id, ImRect bounds)
 {
     Get().mListBounds.push_back({ list_id, bounds });
 }
 
-void DragDropManager::ClearListBounds()
-{
-    Get().mListBounds.clear();
-}
+void DragDropManager::ClearListBounds() { Get().mListBounds.clear(); }
 
 Dropzone* DragDropManager::FindCurrentDropzone()
 {
@@ -99,12 +96,12 @@ Dropzone* DragDropManager::FindCurrentDropzone()
         if(payload->IsDataType("CARD_PAYLOAD"))
         {
             ImVec2 mouse = ImGui::GetIO().MousePos;
-            
+
             // 1. Find which list we are hovering
             int hovered_list_id = -1;
-            for (const auto& bounds : Get().mListBounds)
+            for(const auto& bounds : Get().mListBounds)
             {
-                if (bounds.rect.Contains(mouse))
+                if(bounds.rect.Contains(mouse))
                 {
                     hovered_list_id = bounds.list_id;
                     break; // Found the list we are in
@@ -117,10 +114,10 @@ Dropzone* DragDropManager::FindCurrentDropzone()
             // 2. Filter dropzones
             // If we are hovering a list, ONLY consider dropzones in that list.
             // If we are NOT hovering any list, consider ALL dropzones (fallback).
-            
+
             for(auto& zone : Get().mDropZones)
             {
-                if (hovered_list_id != -1 && zone.list_id != hovered_list_id)
+                if(hovered_list_id != -1 && zone.list_id != hovered_list_id)
                     continue;
 
                 ImVec2 center = (zone.rect.Min + zone.rect.Max) * 0.5f;
@@ -159,13 +156,14 @@ Dropzone* DragDropManager::FindCurrentDropzone()
 Card* DragDropManager::GetCard(int list_id, int card_index)
 {
     BoardData* activeBoard = BoardManager::Get().GetActiveBoard();
-    if(!activeBoard) return nullptr;
+    if(!activeBoard)
+        return nullptr;
 
     std::vector<CardList>& lists = activeBoard->mCardLists;
-    if (list_id >= 0 && list_id < (int)lists.size())
+    if(list_id >= 0 && list_id < (int)lists.size())
     {
-        std::vector<Card>& cards = lists[list_id].mCards;
-        if (card_index >= 0 && card_index < (int)cards.size())
+        std::vector<Card>& cards = lists[list_id].cards;
+        if(card_index >= 0 && card_index < (int)cards.size())
         {
             return &cards[card_index];
         }

@@ -6,6 +6,8 @@
 #include "CardList.h"
 #include "DragDropTypes.h"
 
+using Stride::Card;
+
 class DragDropManager
 {
   public:
@@ -18,7 +20,7 @@ class DragDropManager
     static void PerformDropOperation();
     static void DrawTooltipOfDraggedItem();
     static void UpdateDropZone();
-    
+
     static DragOperation& GetDragOperation() { return Get().mDragOperation; }
     static std::vector<Dropzone>& GetDropZones() { return Get().mDropZones; }
     static Dropzone* GetCurrentDropZonePtr() { return Get().mCurrentDropZonePtr; }

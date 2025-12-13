@@ -58,7 +58,7 @@ void RegisterBoardTests(ImGuiTestEngine* engine)
         
         if (final_count > 0)
         {
-            IM_CHECK_STR_EQ(activeBoard->mCardLists.back().mTitle.c_str(), "Test List");
+            IM_CHECK_STR_EQ(activeBoard->mCardLists.back().title.c_str(), "Test List");
         }
     };
 

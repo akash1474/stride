@@ -1,11 +1,16 @@
 #pragma once
 #include <vector>
 #include <string>
+#include <unordered_map>
 #include "BoardData.h"
+#include "renderers/CardListRenderer.h"
+
+using Stride::CardEditorState;
+using Stride::CardListUIState;
 
 class BoardManager
 {
-public:
+  public:
     static BoardManager& Get()
     {
         static BoardManager instance;
@@ -24,7 +29,11 @@ public:
     // Board Specific Operations (Proxies to Active Board)
     void AddList(const std::string& title);
 
-private:
+    // Get UI state for a card list
+    CardListUIState& GetListUIState(const std::string& listId);
+    CardEditorState& GetEditorState(const std::string& listId);
+
+  private:
     BoardManager() = default;
 
     std::vector<BoardData> mBoards;
@@ -37,4 +46,8 @@ private:
     // UI State for Board Creation
     bool mIsCreatingBoard = false;
     char mNewBoardTitleBuffer[512] = "";
+
+    // UI state storage for card lists
+    std::unordered_map<std::string, CardListUIState> mListUIStates;
+    std::unordered_map<std::string, CardEditorState> mEditorStates;
 };

@@ -2,39 +2,35 @@
 #include "string"
 #include "Card.h"
 #include "imgui.h"
+#include <optional>
 
-
-class CardList
+namespace Stride
 {
-  public:
-    std::vector<Card> mCards;
-    std::string mTitle;
+    struct CardList
+    {
+        // Identity
+        std::string id;
 
-    CardList(std::string title, const std::vector<Card>&& aCards);
+        // Data
+        std::string title;
+        std::vector<Card> cards;
 
-    void Render(int list_id, ImVec2 size);
+        // Constructors
+        CardList();
+        CardList(std::string aTitle, std::vector<Card> aCards = {});
 
-  private:
-    char mTitleBuffer[256] = "";
-    bool mIsEditingTitle = false;
-    std::string mUniqueID;
-    float mLastContentHeight = 0.0f;
+        // Card operations
+        void AddCard(Card card);
+        void InsertCard(Card card, size_t index);
+        void RemoveCard(const std::string& cardId);
+        void MoveCard(size_t fromIndex, size_t toIndex);
 
-    // Card Popup State
-    bool mShowCardPopup = false;
-    int mEditingCardIndex = -1; // -1 means creating new card
-    char mCardTitleBuffer[256] = "";
-    char mCardDescriptionBuffer[1024] = "";
-    char mBadgeInputBuffer[64] = "";
-    std::vector<std::string> mCardBadges;
+        // Query
+        Card* FindCard(const std::string& cardId);
+        const Card* FindCard(const std::string& cardId) const;
+        std::optional<size_t> GetCardIndex(const std::string& cardId) const;
 
-    // Checklist state
-    std::vector<Card::ChecklistItem> mTempChecklist;
-    char mChecklistInputBuffer[256] = "";
-
-    void RenderCardPopup();
-
-    void ListHeader();
-    bool RenderCardListFooter();
-    void ResetCardListState();
-};
+        bool IsEmpty() const { return cards.empty(); }
+        size_t CardCount() const { return cards.size(); }
+    };
+}

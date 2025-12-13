@@ -1,6 +1,7 @@
 packages/*/*
 bin/
 .cache/
+docs/
 compile_commands.json
 *.vcxproj
 *.ini

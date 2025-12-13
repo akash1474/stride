@@ -3,6 +3,8 @@
 #include <vector>
 #include "CardList.h"
 
+using Stride::CardList;
+
 struct BoardData
 {
     std::string mID;

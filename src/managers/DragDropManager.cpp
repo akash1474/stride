@@ -39,11 +39,11 @@ void DragDropManager::PerformDropOperation()
     DragOperation& aDragOperation = Get().mDragOperation;
 
     // Access lists via BoardManager
-    BoardData* activeBoard = BoardManager::Get().GetActiveBoard();
+    Stride::BoardData* activeBoard = BoardManager::Get().GetActiveBoard();
     if(!activeBoard)
         return;
 
-    std::vector<CardList>& lists = activeBoard->mCardLists;
+    std::vector<Stride::CardList>& lists = activeBoard->lists;
 
     if(aDragOperation.source_list_id < 0 || aDragOperation.source_list_id >= (int)lists.size()
        || aDragOperation.target_list_id < 0 || aDragOperation.target_list_id >= (int)lists.size())
@@ -155,11 +155,11 @@ Dropzone* DragDropManager::FindCurrentDropzone()
 
 Card* DragDropManager::GetCard(int list_id, int card_index)
 {
-    BoardData* activeBoard = BoardManager::Get().GetActiveBoard();
+    Stride::BoardData* activeBoard = BoardManager::Get().GetActiveBoard();
     if(!activeBoard)
         return nullptr;
 
-    std::vector<CardList>& lists = activeBoard->mCardLists;
+    std::vector<Stride::CardList>& lists = activeBoard->lists;
     if(list_id >= 0 && list_id < (int)lists.size())
     {
         std::vector<Card>& cards = lists[list_id].cards;

@@ -34,10 +34,10 @@ void RegisterBoardTests(ImGuiTestEngine* engine)
         auto& boardManager = BoardManager::Get();
         boardManager.Setup(); // Resets to default state
         
-        BoardData* activeBoard = boardManager.GetActiveBoard();
+        Stride::BoardData* activeBoard = boardManager.GetActiveBoard();
         IM_CHECK(activeBoard != nullptr);
         
-        size_t initial_count = activeBoard->mCardLists.size();
+        size_t initial_count = activeBoard->lists.size();
 
         // 1. Set Reference Window
         ctx->SetRef("Board");
@@ -53,12 +53,12 @@ void RegisterBoardTests(ImGuiTestEngine* engine)
         // 4. Verify
         ctx->Yield(); 
         
-        size_t final_count = activeBoard->mCardLists.size();
+        size_t final_count = activeBoard->lists.size();
         IM_CHECK_EQ(final_count, initial_count + 1);
         
         if (final_count > 0)
         {
-            IM_CHECK_STR_EQ(activeBoard->mCardLists.back().title.c_str(), "Test List");
+            IM_CHECK_STR_EQ(activeBoard->lists.back().title.c_str(), "Test List");
         }
     };
 

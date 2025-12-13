@@ -67,15 +67,15 @@ namespace Stride
         RenderBoardContent();
         RenderCreateBoardPopup();
         
-        // Handle drag-drop
+        // Handle drag-drop - pass board data
         FontManager::Push(FontFamily::Regular, FontSize::Regular);
-        DragDropManager::DrawTooltipOfDraggedItem();
+        DragDropManager::DrawTooltipOfDraggedItem(activeBoard);
         DragDropManager::UpdateDropZone();
         
         DragOperation& op = DragDropManager::GetDragOperation();
         if (op.IsPending())
         {
-            DragDropManager::PerformDropOperation();
+            DragDropManager::PerformDropOperation(activeBoard);
         }
         FontManager::Pop();
         

@@ -1,8 +1,11 @@
 #include "pch.h"
 #include "CardListRenderer.h"
+#include "managers/BoardData.h"
+#include "managers/BoardViewController.h"
 #include "renderers/CardRenderer.h"
 #include "managers/DragDropManager.h"
 #include "managers/FontManager.h"
+#include "managers/BoardManager.h"
 #include "managers/DragDropTypes.h"
 #include "FontAwesome6.h"
 #include "BadgeColors.h"
@@ -538,17 +541,17 @@ namespace Stride
         const ImGuiPayload* global_payload = ImGui::GetDragDropPayload();
         bool payload_active = (global_payload && global_payload->IsDataType("CARD_PAYLOAD"));
 
-        std::vector<Dropzone>& aDropZones = DragDropManager::GetDropZones();
-        DragOperation& aDragOperation = DragDropManager::GetDragOperation();
-        Dropzone* current_drop = DragDropManager::GetCurrentDropZonePtr();
+        std::vector<Stride::Dropzone>& aDropZones = Stride::DragDropManager::GetDropZones();
+        Stride::DragOperation& aDragOperation = Stride::DragDropManager::GetDragOperation();
+        Stride::Dropzone* current_drop = Stride::DragDropManager::GetCurrentDropZonePtr();
 
         for(size_t i = 0; i <= data.cards.size(); ++i)
         {
             bool isCurrentCardDragging = false;
             if(payload_active && global_payload->IsDataType("CARD_PAYLOAD"))
             {
-                const DragDropPayload* d = (const DragDropPayload*)global_payload->Data;
-                if(d->source_list_id == listIndex && d->card_index == (int)i)
+                const Stride::DragDropPayload* d = (const Stride::DragDropPayload*)global_payload->Data;
+                if(d->GetSourceListId() == data.id && d->card_index == (int)i)
                     isCurrentCardDragging = true;
             }
             if(isCurrentCardDragging)
@@ -556,32 +559,36 @@ namespace Stride
 
             // Dropzone between cards
             std::string dropzone_id
-                = std::string("dropzone_") + std::to_string(listIndex) + "_" + std::to_string(i);
+                = std::string("dropzone_") + data.id + "_" + std::to_string(i);
             ImGui::InvisibleButton(
                 dropzone_id.c_str(),
                 ImVec2(ImGui::GetContentRegionAvail().x, 1.0f)
             );
             ImRect zone_rect(ImGui::GetItemRectMin(), ImGui::GetItemRectMax());
-            aDropZones.push_back({ zone_rect, listIndex, (int)i });
+            aDropZones.push_back({ zone_rect, data.id, (int)i });
 
             if(ImGui::BeginDragDropTarget())
             {
                 if(const ImGuiPayload* p = ImGui::AcceptDragDropPayload("CARD_PAYLOAD"))
                 {
-                    const DragDropPayload* d = (const DragDropPayload*)p->Data;
-                    aDragOperation = { d->source_list_id, d->card_index, listIndex, (int)i };
+                    const Stride::DragDropPayload* d = (const Stride::DragDropPayload*)p->Data;
+                    aDragOperation.source_list_id = d->GetSourceListId();
+                    aDragOperation.source_index = d->card_index;
+                    aDragOperation.target_list_id = data.id;
+                    aDragOperation.target_index = (int)i;
                 }
                 ImGui::EndDragDropTarget();
             }
 
             // Highlight active dropzone
-            if(current_drop && current_drop->list_id == listIndex
+            if(current_drop && current_drop->list_id == data.id
                && current_drop->insert_index == (int)i)
             {
                 if(payload_active && global_payload->IsDataType("CARD_PAYLOAD"))
                 {
-                    const DragDropPayload* d = (const DragDropPayload*)global_payload->Data;
-                    Card* moving_card = DragDropManager::GetCard(d->source_list_id, d->card_index);
+                    const Stride::DragDropPayload* d = (const Stride::DragDropPayload*)global_payload->Data;
+                    BoardData* boardData = BoardManager::Get().GetActiveBoard();
+                    Card* moving_card = DragDropManager::GetCard(boardData,d->source_list_id, d->card_index);
                     if(moving_card)
                     {
                         float x_center
@@ -627,7 +634,9 @@ namespace Stride
                        | ImGuiDragDropFlags_AcceptNoDrawDefaultRect
                    ))
                 {
-                    DragDropPayload d = { listIndex, (int)i };
+                    Stride::DragDropPayload d;
+                    d.SetSourceListId(data.id);
+                    d.card_index = (int)i;
                     ImGui::SetDragDropPayload("CARD_PAYLOAD", &d, sizeof(d));
                     ImGui::EndDragDropSource();
                 }
@@ -644,12 +653,12 @@ namespace Stride
     )
     {
         const float dpiScale = FontManager::GetDpiScale();
-        std::vector<Dropzone>& aDropZones = DragDropManager::GetDropZones();
+        std::vector<Stride::Dropzone>& aDropZones = Stride::DragDropManager::GetDropZones();
 
         if(listIndex == 0)
         {
             aDropZones.clear();
-            DragDropManager::ClearListBounds();
+            Stride::DragDropManager::ClearListBounds();
         }
 
         ImGui::PushStyleColor(ImGuiCol_ChildBg, sStyle.backgroundColor);
@@ -672,7 +681,7 @@ namespace Stride
                 ImGui::GetWindowPos().y + ImGui::GetWindowSize().y
             )
         );
-        DragDropManager::RegisterListBounds(listIndex, listRect);
+        Stride::DragDropManager::RegisterListBounds(data.id, listRect);
 
         ImGui::PushStyleColor(ImGuiCol_ChildBg, IM_COL32(0, 0, 0, 0));
 

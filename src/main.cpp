@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "Log.h"
 #include "Timer.h"
+#include "PathManager.h"
 #include "resources/StrideLogo.embed"
 #include <minwindef.h>
 #include <processenv.h>
@@ -23,7 +24,12 @@
 int main(int argc, char* argv[])
 {
 #ifdef GL_DEBUG
+    // Initialize path manager and logging
+    Stride::PathManager::Get().Initialize("Stride");
     OpenGL::Log::Init();
+#else
+    // Initialize path manager for release builds too
+    Stride::PathManager::Get().Initialize("Stride");
 #endif
 
     OpenGL::Timer timer;

@@ -1,6 +1,7 @@
 packages/*/*
 bin/
 .cache/
+.stride-dev/
 docs/
 compile_commands.json
 *.vcxproj

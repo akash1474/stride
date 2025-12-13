@@ -35,7 +35,7 @@ void FontManager::SetFontPath(FontFamily family, const fs::path& path)
 
     // DON'T reload immediately. Just set the flag.
     fntManager.m_FontsNeedReload = true;
-    CacheState(OpenGL::PathManager::GetFontDataFile());
+    CacheState(Stride::PathManager::Get().GetFontDataFile());
 }
 
 void FontManager::LoadFontsFromDirectory(const fs::path& directoryPath)
@@ -116,7 +116,7 @@ void FontManager::LoadFontsFromDirectory(const fs::path& directoryPath)
     if(pathsChanged)
     {
         fntManager.m_FontsNeedReload = true;
-        CacheState(OpenGL::PathManager::GetFontDataFile());
+        CacheState(Stride::PathManager::Get().GetFontDataFile());
     }
 }
 
@@ -136,7 +136,7 @@ void FontManager::Init(float dpiScale)
     OpenGL::ScopedTimer timer("FontManager::Init");
 
     // Load saved settings first (this will populate m_GlobalOffset and m_FontPaths)
-    ReloadStateFromCache(OpenGL::PathManager::GetFontDataFile());
+    ReloadStateFromCache(Stride::PathManager::Get().GetFontDataFile());
 
     // If no paths were loaded from cache, set some defaults
     FontManager& fntManager = Get();
@@ -293,7 +293,7 @@ void FontManager::Pop() { ImGui::PopFont(); }
 void FontManager::ChangeSize(float delta)
 {
     Get().m_GlobalOffset += delta;
-    CacheState(OpenGL::PathManager::GetFontDataFile());
+    CacheState(Stride::PathManager::Get().GetFontDataFile());
 }
 
 static std::string FontFamilyToString(FontFamily family)

@@ -7,9 +7,25 @@
 #include "BoardRepository.h"
 #include "BoardViewController.h"
 
-using Stride::CardEditorState;
-using Stride::CardListUIState;
 
+/**
+ * @brief Facade and singleton coordinator for the board management system.
+ *
+ * BoardManager provides a unified interface for board operations, acting as the main
+ * entry point for board-related functionality in the application. It coordinates between:
+ * - BoardRepository: Handles data storage and CRUD operations
+ * - BoardViewController: Manages UI rendering and user interactions
+ *
+ * Key Responsibilities:
+ * - Application initialization and setup
+ * - Delegating board operations to the repository
+ * - Delegating UI rendering to the view controller
+ * - Maintaining references to the active board
+ * - Creating sample/demo data for testing
+ *
+ * @note This is a singleton - use BoardManager::Get() to access the instance.
+ * @see BoardRepository, BoardViewController, BoardData
+ */
 class BoardManager
 {
   public:
@@ -34,16 +50,16 @@ class BoardManager
     void AddList(const std::string& title);
 
     // Get UI state for a card list (delegates to view controller)
-    CardListUIState& GetListUIState(const std::string& listId);
-    CardEditorState& GetEditorState(const std::string& listId);
-    
+    Stride::CardListUIState& GetListUIState(const std::string& listId);
+    Stride::CardEditorState& GetEditorState(const std::string& listId);
+
     // Access to internals (for advanced use)
     Stride::BoardRepository& GetRepository() { return *mRepository; }
     Stride::BoardViewController& GetViewController() { return *mViewController; }
 
   private:
     BoardManager();
-    
+
     void CreateSampleData();
 
     std::unique_ptr<Stride::BoardRepository> mRepository;

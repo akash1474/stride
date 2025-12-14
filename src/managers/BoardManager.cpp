@@ -13,12 +13,12 @@ BoardManager::BoardManager()
     , mViewController(std::make_unique<BoardViewController>(*mRepository))
 {}
 
-CardListUIState& BoardManager::GetListUIState(const std::string& listId)
+Stride::CardListUIState& BoardManager::GetListUIState(const std::string& listId)
 {
     return mViewController->GetListUIState(listId);
 }
 
-CardEditorState& BoardManager::GetEditorState(const std::string& listId)
+Stride::CardEditorState& BoardManager::GetEditorState(const std::string& listId)
 {
     return mViewController->GetEditorState(listId);
 }

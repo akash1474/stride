@@ -23,6 +23,11 @@ namespace Stride
         std::string title;
         std::string description;
 
+        int position;
+        std::string coverImage;
+        time_t dueDate;
+        bool isCompleted;
+
         // Metadata
         std::vector<std::string> badges;
         std::vector<ChecklistItem> checklist;

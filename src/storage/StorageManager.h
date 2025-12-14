@@ -42,6 +42,10 @@ public:
         return Get().GetListsInBoardInternal(boardId);
     }
 
+    static Storage::ListData GetList(int id) {
+        return Get().GetListInternal(id);
+    }
+
     static void UpdateList(Storage::ListData l) {
         Get().UpdateListInternal(std::move(l));
     }
@@ -214,6 +218,11 @@ private:
             where(c(&Storage::ListData::board_id) == boardId),
             order_by(&Storage::ListData::position)
         );
+    }
+
+    Storage::ListData GetListInternal(int id)
+    {
+        return mStorage.get<Storage::ListData>(id);
     }
 
     void UpdateListInternal(Storage::ListData l)

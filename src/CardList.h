@@ -14,6 +14,7 @@ namespace Stride
         // Data
         std::string title;
         std::vector<Card> cards;
+        int position;
 
         // Constructors
         CardList();

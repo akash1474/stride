@@ -27,6 +27,7 @@ namespace Stride
         // Identity
         std::string id;
         std::string title;
+        std::string description;
 
         // Content
         std::vector<CardList> lists;

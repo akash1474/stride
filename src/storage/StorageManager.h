@@ -7,143 +7,123 @@
 
 class StorageManager
 {
-public:
+  public:
     // =========================================================
     // ✅ STATIC PUBLIC API (USE LIKE: StorageManager::GetBoard(id))
     // =========================================================
 
     // ---------- BOARDS ----------
-    static int CreateBoard(Storage::BoardData b) {
-        return Get().CreateBoardInternal(std::move(b));
-    }
+    static int CreateBoard(Storage::BoardData b) { return Get().CreateBoardInternal(std::move(b)); }
 
-    static std::vector<Storage::BoardData> GetAllBoards() {
-        return Get().GetAllBoardsInternal();
-    }
+    static std::vector<Storage::BoardData> GetAllBoards() { return Get().GetAllBoardsInternal(); }
 
-    static Storage::BoardData GetBoard(int id) {
-        return Get().GetBoardInternal(id);
-    }
+    static Storage::BoardData GetBoard(int id) { return Get().GetBoardInternal(id); }
 
-    static void UpdateBoard(Storage::BoardData b) {
-        Get().UpdateBoardInternal(std::move(b));
-    }
+    static void UpdateBoard(Storage::BoardData b) { Get().UpdateBoardInternal(std::move(b)); }
 
-    static void DeleteBoard(int id) {
-        Get().DeleteBoardInternal(id);
-    }
+    static void DeleteBoard(int id) { Get().DeleteBoardInternal(id); }
 
     // ---------- LISTS ----------
-    static int CreateList(Storage::ListData l) {
-        return Get().CreateListInternal(std::move(l));
-    }
+    static int CreateList(Storage::ListData l) { return Get().CreateListInternal(std::move(l)); }
 
-    static std::vector<Storage::ListData> GetListsInBoard(int boardId) {
+    static std::vector<Storage::ListData> GetListsInBoard(int boardId)
+    {
         return Get().GetListsInBoardInternal(boardId);
     }
 
-    static Storage::ListData GetList(int id) {
-        return Get().GetListInternal(id);
-    }
+    static Storage::ListData GetList(int id) { return Get().GetListInternal(id); }
 
-    static void UpdateList(Storage::ListData l) {
-        Get().UpdateListInternal(std::move(l));
-    }
+    static void UpdateList(Storage::ListData l) { Get().UpdateListInternal(std::move(l)); }
 
-    static void ReorderList(int listId, double prevPos, double nextPos) {
+    static void ReorderList(int listId, double prevPos, double nextPos)
+    {
         Get().ReorderListInternal(listId, prevPos, nextPos);
     }
 
     // ---------- CARDS ----------
-    static int CreateCard(Storage::CardData c) {
-        return Get().CreateCardInternal(std::move(c));
-    }
+    static int CreateCard(Storage::CardData c) { return Get().CreateCardInternal(std::move(c)); }
 
-    static Storage::CardData GetCard(int id) {
-        return Get().GetCardInternal(id);
-    }
+    static Storage::CardData GetCard(int id) { return Get().GetCardInternal(id); }
 
-    static std::vector<Storage::CardData> GetCardsInList(int listId) {
+    static std::vector<Storage::CardData> GetCardsInList(int listId)
+    {
         return Get().GetCardsInListInternal(listId);
     }
 
-    static void UpdateCard(Storage::CardData c) {
-        Get().UpdateCardInternal(std::move(c));
-    }
+    static void UpdateCard(Storage::CardData c) { Get().UpdateCardInternal(std::move(c)); }
 
-    static void DeleteCard(int id) {
-        Get().DeleteCardInternal(id);
-    }
+    static void DeleteCard(int id) { Get().DeleteCardInternal(id); }
 
-    static void MoveCardToList(int cardId, int newListId, double newPos) {
+    static void MoveCardToList(int cardId, int newListId, double newPos)
+    {
         Get().MoveCardToListInternal(cardId, newListId, newPos);
     }
 
-    static void ReorderCard(int cardId, double prevPos, double nextPos) {
+    static void ReorderCard(int cardId, double prevPos, double nextPos)
+    {
         Get().ReorderCardInternal(cardId, prevPos, nextPos);
     }
 
-    static void ArchiveCard(int cardId) {
-        Get().ArchiveCardInternal(cardId);
-    }
+    static void ArchiveCard(int cardId) { Get().ArchiveCardInternal(cardId); }
 
-    static void UnarchiveCard(int cardId) {
-        Get().UnarchiveCardInternal(cardId);
-    }
+    static void UnarchiveCard(int cardId) { Get().UnarchiveCardInternal(cardId); }
 
     // ---------- BADGES ----------
-    static int CreateBadge(const Storage::BadgeData& b) {
-        return Get().CreateBadgeInternal(b);
-    }
+    static int CreateBadge(const Storage::BadgeData& b) { return Get().CreateBadgeInternal(b); }
 
-    static std::vector<Storage::BadgeData> GetBadgesInBoard(int boardId) {
+    static std::vector<Storage::BadgeData> GetBadgesInBoard(int boardId)
+    {
         return Get().GetBadgesInBoardInternal(boardId);
     }
 
-    static void AddBadgeToCard(int cardId, int badgeId) {
+    static void AddBadgeToCard(int cardId, int badgeId)
+    {
         Get().AddBadgeToCardInternal(cardId, badgeId);
     }
 
-    static void RemoveBadgeFromCard(int cardId, int badgeId) {
+    static void RemoveBadgeFromCard(int cardId, int badgeId)
+    {
         Get().RemoveBadgeFromCardInternal(cardId, badgeId);
     }
 
-    static std::vector<Storage::BadgeData> GetBadgesForCard(int cardId) {
+    static std::vector<Storage::BadgeData> GetBadgesForCard(int cardId)
+    {
         return Get().GetBadgesForCardInternal(cardId);
     }
 
     // ---------- CHECKLIST ITEMS (FLATTENED) ----------
-    static int CreateChecklistItem(const Storage::ChecklistItemData& i) {
+    static int CreateChecklistItem(const Storage::ChecklistItemData& i)
+    {
         return Get().CreateChecklistItemInternal(i);
     }
 
-    static std::vector<Storage::ChecklistItemData> GetChecklistItemsForCard(int cardId) {
+    static std::vector<Storage::ChecklistItemData> GetChecklistItemsForCard(int cardId)
+    {
         return Get().GetChecklistItemsForCardInternal(cardId);
     }
 
-    static void UpdateChecklistItem(const Storage::ChecklistItemData& i) {
+    static void UpdateChecklistItem(const Storage::ChecklistItemData& i)
+    {
         Get().UpdateChecklistItemInternal(i);
     }
 
-    static void DeleteChecklistItem(int id) {
-        Get().DeleteChecklistItemInternal(id);
-    }
+    static void DeleteChecklistItem(int id) { Get().DeleteChecklistItemInternal(id); }
 
     // ---------- COMMENTS ----------
-    static int AddComment(Storage::CommentData c) {
-        return Get().AddCommentInternal(std::move(c));
-    }
+    static int AddComment(Storage::CommentData c) { return Get().AddCommentInternal(std::move(c)); }
 
-    static std::vector<Storage::CommentData> GetCommentsForCard(int cardId) {
+    static std::vector<Storage::CommentData> GetCommentsForCard(int cardId)
+    {
         return Get().GetCommentsForCardInternal(cardId);
     }
 
     // ---------- SEARCH ----------
-    static std::vector<Storage::CardData> SearchCards(int boardId, const std::string& text) {
+    static std::vector<Storage::CardData> SearchCards(int boardId, const std::string& text)
+    {
         return Get().SearchCardsInternal(boardId, text);
     }
 
-private:
+  private:
     // =========================================================
     // ✅ SINGLETON CORE
     // =========================================================
@@ -157,13 +137,12 @@ private:
     StorageManager(const StorageManager&) = delete;
     StorageManager& operator=(const StorageManager&) = delete;
 
-    StorageManager(const std::string& path)
-        : mStorage(Storage::SetupStorageDatabaseModels(path))
+    StorageManager(const std::string& path) : mStorage(Storage::SetupStorageDatabaseModels(path))
     {
         mStorage.sync_schema();
     }
 
-private:
+  private:
     decltype(Storage::SetupStorageDatabaseModels("")) mStorage;
 
     double Mid(double a, double b) { return (a + b) * 0.5; }
@@ -187,10 +166,7 @@ private:
         return mStorage.get_all<Storage::BoardData>(order_by(&Storage::BoardData::id));
     }
 
-    Storage::BoardData GetBoardInternal(int id)
-    {
-        return mStorage.get<Storage::BoardData>(id);
-    }
+    Storage::BoardData GetBoardInternal(int id) { return mStorage.get<Storage::BoardData>(id); }
 
     void UpdateBoardInternal(Storage::BoardData b)
     {
@@ -198,10 +174,7 @@ private:
         mStorage.update(b);
     }
 
-    void DeleteBoardInternal(int id)
-    {
-        mStorage.remove<Storage::BoardData>(id);
-    }
+    void DeleteBoardInternal(int id) { mStorage.remove<Storage::BoardData>(id); }
 
     // ----- LISTS -----
     int CreateListInternal(Storage::ListData l)
@@ -220,10 +193,7 @@ private:
         );
     }
 
-    Storage::ListData GetListInternal(int id)
-    {
-        return mStorage.get<Storage::ListData>(id);
-    }
+    Storage::ListData GetListInternal(int id) { return mStorage.get<Storage::ListData>(id); }
 
     void UpdateListInternal(Storage::ListData l)
     {
@@ -247,17 +217,15 @@ private:
         return mStorage.insert(c);
     }
 
-    Storage::CardData GetCardInternal(int id)
-    {
-        return mStorage.get<Storage::CardData>(id);
-    }
+    Storage::CardData GetCardInternal(int id) { return mStorage.get<Storage::CardData>(id); }
 
     std::vector<Storage::CardData> GetCardsInListInternal(int listId)
     {
         using namespace sqlite_orm;
         return mStorage.get_all<Storage::CardData>(
-            where(c(&Storage::CardData::list_id) == listId &&
-                  c(&Storage::CardData::archived) == false),
+            where(
+                c(&Storage::CardData::list_id) == listId && c(&Storage::CardData::archived) == false
+            ),
             order_by(&Storage::CardData::position)
         );
     }
@@ -268,10 +236,7 @@ private:
         mStorage.update(c);
     }
 
-    void DeleteCardInternal(int id)
-    {
-        mStorage.remove<Storage::CardData>(id);
-    }
+    void DeleteCardInternal(int id) { mStorage.remove<Storage::CardData>(id); }
 
     void MoveCardToListInternal(int cardId, int newListId, double newPos)
     {
@@ -305,10 +270,7 @@ private:
     }
 
     // ----- BADGES -----
-    int CreateBadgeInternal(const Storage::BadgeData& b)
-    {
-        return mStorage.insert(b);
-    }
+    int CreateBadgeInternal(const Storage::BadgeData& b) { return mStorage.insert(b); }
 
     std::vector<Storage::BadgeData> GetBadgesInBoardInternal(int boardId)
     {
@@ -355,15 +317,9 @@ private:
         );
     }
 
-    void UpdateChecklistItemInternal(const Storage::ChecklistItemData& i)
-    {
-        mStorage.update(i);
-    }
+    void UpdateChecklistItemInternal(const Storage::ChecklistItemData& i) { mStorage.update(i); }
 
-    void DeleteChecklistItemInternal(int id)
-    {
-        mStorage.remove<Storage::ChecklistItemData>(id);
-    }
+    void DeleteChecklistItemInternal(int id) { mStorage.remove<Storage::ChecklistItemData>(id); }
 
     // ----- COMMENTS -----
     int AddCommentInternal(Storage::CommentData c)
@@ -387,12 +343,9 @@ private:
         using namespace sqlite_orm;
         std::string q = "%" + text + "%";
 
-        return mStorage.get_all<Storage::CardData>(
-            where(
-                c(&Storage::CardData::board_id) == boardId &&
-                (like(&Storage::CardData::title, q) ||
-                 like(&Storage::CardData::description, q))
-            )
-        );
+        return mStorage.get_all<Storage::CardData>(where(
+            c(&Storage::CardData::board_id) == boardId
+            && (like(&Storage::CardData::title, q) || like(&Storage::CardData::description, q))
+        ));
     }
 };

@@ -25,6 +25,7 @@ namespace Stride
         void InsertCard(Card card, size_t index);
         void RemoveCard(const std::string& cardId);
         void MoveCard(size_t fromIndex, size_t toIndex);
+        void UpdateCardPositions(); // Update position field of all cards to match array index
 
         // Query
         Card* FindCard(const std::string& cardId);

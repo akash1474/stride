@@ -18,7 +18,7 @@ namespace Storage
         int id;
         int board_id;
         std::string name;
-        double position;
+        int position;
         int64_t created_at;
         int64_t updated_at;
     };
@@ -30,7 +30,7 @@ namespace Storage
         int board_id;
         std::string title;
         std::string description;
-        double position;
+        int position;
         int64_t created_at;
         int64_t updated_at;
         int64_t due_date;
@@ -59,7 +59,7 @@ namespace Storage
         int id;
         int card_id; // Flattened: Directly linked to card
         std::string content;
-        double position;
+        int position;
         bool completed;
     };
 

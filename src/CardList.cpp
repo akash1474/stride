@@ -15,15 +15,15 @@ namespace Stride
     // Card operations
     void CardList::AddCard(Card card) { cards.push_back(std::move(card)); }
 
-    void CardList::InsertCard(Card card, size_t index)
+    void CardList::InsertCard(Card card, size_t insert_index)
     {
-        if(index >= cards.size())
+        if(insert_index >= cards.size())
         {
             cards.push_back(std::move(card));
         }
         else
         {
-            cards.insert(cards.begin() + index, std::move(card));
+            cards.insert(cards.begin() + insert_index, std::move(card));
         }
     }
 
@@ -41,7 +41,14 @@ namespace Stride
 
     void CardList::MoveCard(size_t fromIndex, size_t toIndex)
     {
-        if(fromIndex >= cards.size() || toIndex >= cards.size())
+        if(fromIndex >= cards.size())
+            return;
+
+        // toIndex must be within [0, cards.size()-1] for valid move position
+        if(toIndex >= cards.size())
+            return;
+
+        if(fromIndex == toIndex)
             return;
 
         if(fromIndex < toIndex)
@@ -88,5 +95,13 @@ namespace Stride
             return std::distance(cards.begin(), it);
         }
         return std::nullopt;
+    }
+
+    void CardList::UpdateCardPositions()
+    {
+        for(size_t i = 0; i < cards.size(); ++i)
+        {
+            cards[i].position = static_cast<int>(i);
+        }
     }
 }

@@ -51,6 +51,7 @@ namespace Stride
         CardList& InsertList(const std::string& title, size_t index);
         void RemoveList(const std::string& listId);
         void MoveList(size_t fromIndex, size_t toIndex);
+        void UpdateListPositions(); // Update position field of all lists to match array index
 
         // Query
         CardList* FindList(const std::string& listId);

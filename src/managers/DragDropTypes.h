@@ -27,6 +27,28 @@ namespace Stride
         }
     };
 
+    struct ListDragDropPayload
+    {
+        char list_id[64];  // Fixed-size for ImGui payload compatibility
+        int list_index;
+        
+        // Helper to set from std::string
+        void SetListId(const std::string& id)
+        {
+            size_t len = id.length();
+            if (len >= sizeof(list_id))
+                len = sizeof(list_id) - 1;
+            memcpy(list_id, id.c_str(), len);
+            list_id[len] = '\0';
+        }
+        
+        // Helper to get as std::string
+        std::string GetListId() const
+        {
+            return std::string(list_id);
+        }
+    };
+
     struct DragOperation
     {
         std::string source_list_id = "";
@@ -43,10 +65,28 @@ namespace Stride
         }
     };
 
+    struct ListDragOperation
+    {
+        int source_index = -1;
+        int target_index = -1;
+        bool IsPending() const { return source_index >= 0; }
+        void Reset()
+        {
+            source_index = -1;
+            target_index = -1;
+        }
+    };
+
     struct Dropzone
     {
         ImRect rect;
         std::string list_id;
+        int insert_index;
+    };
+
+    struct ListDropzone
+    {
+        ImRect rect;
         int insert_index;
     };
 }

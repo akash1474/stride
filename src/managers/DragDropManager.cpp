@@ -3,6 +3,7 @@
 #include "imgui.h"
 #include "imgui_internal.h"
 #include "managers/DragDropManager.h"
+#include "renderers/CardListRenderer.h"
 #include "renderers/CardRenderer.h"
 
 namespace Stride
@@ -175,6 +176,161 @@ namespace Stride
                     dragOp.source_list_id = d->GetSourceListId();
                     dragOp.source_index = d->card_index;
                     dragOp.target_list_id = closest_zone->list_id;
+                    dragOp.target_index = closest_zone->insert_index;
+                    ImGui::ClearDragDrop();
+                }
+
+                return closest_zone;
+            }
+        }
+
+        return nullptr;
+    }
+
+    void DragDropManager::UpdateListPreviewPosition(BoardData* board)
+    {
+        if (!board) return;
+        
+        ListDropzone* activeDropzone = GetCurrentListDropZonePtr();
+        if (!activeDropzone) return;
+        
+        const ImGuiPayload* payload = ImGui::GetDragDropPayload();
+        if (!payload || !payload->IsDataType("LIST_PAYLOAD")) return;
+        
+        const ListDragDropPayload* dragPayload = (const ListDragDropPayload*)payload->Data;
+        
+        // Track original index on first call
+        if (Get().mListPreviewOriginalIndex == -1)
+        {
+            Get().mListPreviewOriginalIndex = dragPayload->list_index;
+            Get().mListPreviewCurrentIndex = dragPayload->list_index;
+        }
+        
+        int targetIndex = activeDropzone->insert_index;
+        
+        // Adjust target index if inserting after removal point
+        if (Get().mListPreviewCurrentIndex < targetIndex)
+        {
+            targetIndex--;
+        }
+        
+        // Only move if position changed
+        if (targetIndex != Get().mListPreviewCurrentIndex && 
+            targetIndex >= 0 && targetIndex < (int)board->lists.size())
+        {
+            board->MoveList(Get().mListPreviewCurrentIndex, targetIndex);
+            Get().mListPreviewCurrentIndex = targetIndex;
+        }
+    }
+    
+    void DragDropManager::ResetListPreviewPosition(BoardData* board)
+    {
+        if (!board) return;
+        
+        // If we have a preview active and it's not at original position, move back
+        if (Get().mListPreviewOriginalIndex != -1 && 
+            Get().mListPreviewCurrentIndex != Get().mListPreviewOriginalIndex)
+        {
+            board->MoveList(Get().mListPreviewCurrentIndex, Get().mListPreviewOriginalIndex);
+        }
+        
+        Get().mListPreviewOriginalIndex = -1;
+        Get().mListPreviewCurrentIndex = -1;
+    }
+
+    void DragDropManager::PerformListDropOperation(BoardData* board)
+    {
+        if (!board) return;
+
+        ListDragOperation& dragOp = Get().mListDragOperation;
+        if (!dragOp.IsPending()) return;
+
+        // If preview positioning was active, the list is already at the correct position
+        // Just update positions and reset preview tracking
+        if (Get().mListPreviewOriginalIndex != -1)
+        {
+            board->UpdateListPositions();
+            Get().mListPreviewOriginalIndex = -1;
+            Get().mListPreviewCurrentIndex = -1;
+            dragOp.Reset();
+            return;
+        }
+
+        // Validation: ensure source index is valid
+        if (dragOp.source_index < 0 || dragOp.source_index >= (int)board->lists.size())
+        {
+            dragOp.Reset();
+            return;
+        }
+
+        // Calculate target index
+        int target_index = dragOp.target_index;
+        if (target_index < 0)
+            target_index = (int)board->lists.size();
+        
+        if (target_index > (int)board->lists.size())
+            target_index = (int)board->lists.size();
+
+        // When moving forward, adjust for removal
+        int move_to_index = target_index;
+        if (dragOp.source_index < target_index)
+        {
+            move_to_index--;
+        }
+        
+        // Clamp to valid range [0, size-1]
+        if (move_to_index < 0)
+            move_to_index = 0;
+        if (move_to_index >= (int)board->lists.size())
+            move_to_index = (int)board->lists.size() - 1;
+        
+        // Perform the move
+        board->MoveList(dragOp.source_index, move_to_index);
+        
+        // Update list positions
+        board->UpdateListPositions();
+
+        dragOp.Reset();
+    }
+
+    void DragDropManager::UpdateListDropZone()
+    {
+        Get().mCurrentListDropZonePtr = FindCurrentListDropzone();
+    }
+
+    ListDropzone* DragDropManager::FindCurrentListDropzone()
+    {
+        ListDragOperation& dragOp = Get().mListDragOperation;
+
+        if (const ImGuiPayload* payload = ImGui::GetDragDropPayload())
+        {
+            if (payload->IsDataType("LIST_PAYLOAD"))
+            {
+                ImVec2 mouse = ImGui::GetIO().MousePos;
+
+                float closest_dist = FLT_MAX;
+                ListDropzone* closest_zone = nullptr;
+
+                // Find closest list dropzone
+                for (auto& zone : Get().mListDropZones)
+                {
+                    ImVec2 center = (zone.rect.Min + zone.rect.Max) * 0.5f;
+                    float dx = mouse.x - center.x;
+                    float dy = mouse.y - center.y;
+                    float dist = dx * dx + dy * dy;
+
+                    if (dist < closest_dist)
+                    {
+                        closest_dist = dist;
+                        closest_zone = &zone;
+                    }
+                }
+
+                // Set pending operation if mouse released
+                if (closest_zone && !ImGui::IsMouseDown(ImGuiMouseButton_Left))
+                {
+                    const ListDragDropPayload* d = (const ListDragDropPayload*)payload->Data;
+                    dragOp.source_index = d->list_index;
                     dragOp.target_index = closest_zone->insert_index;
                     ImGui::ClearDragDrop();
                 }

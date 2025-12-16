@@ -78,7 +78,7 @@ namespace Stride
         static CardListStyle sStyle;
         static std::vector<std::string> sAvailableBadges;
 
-        static void RenderHeader(CardList& data, CardListUIState& uiState);
+        static void RenderHeader(CardList& data, CardListUIState& uiState, int listIndex);
         static void RenderCards(CardList& data, CardEditorState& editorState, int listIndex);
         static void RenderFooter(CardList& data, CardEditorState& editorState);
         static void RenderCardPopup(CardList& data, CardEditorState& editorState);

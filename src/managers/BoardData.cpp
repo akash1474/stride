@@ -180,4 +180,12 @@ namespace Stride
         }
         return count;
     }
+
+    void BoardData::UpdateListPositions()
+    {
+        for (size_t i = 0; i < lists.size(); ++i)
+        {
+            lists[i].position = static_cast<int>(i);
+        }
+    }
 }

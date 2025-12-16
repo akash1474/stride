@@ -84,7 +84,7 @@ namespace Stride
         return sAvailableBadges;
     }
 
-    void CardListRenderer::RenderHeader(CardList& data, CardListUIState& uiState)
+    void CardListRenderer::RenderHeader(CardList& data, CardListUIState& uiState, int listIndex)
     {
         const float dpiScale = FontManager::GetDpiScale();
         const float x_center = (ImGui::GetContentRegionAvail().x - 256.0f * dpiScale) * 0.5f;
@@ -126,6 +126,7 @@ namespace Stride
             ImGui::SetCursorScreenPos(text_pos);
             ImGui::PushStyleColor(ImGuiCol_FrameBg, IM_COL32(255, 255, 255, 0));
             ImGui::SetNextItemWidth(width - padding_x - (button_size * 2.0f) - spacing - 5.0f);
+            ImGui::SetKeyboardFocusHere();
             if(ImGui::InputText(
                    (std::string("##titleEditor") + uiState.uniqueId).c_str(),
                    uiState.titleBuffer,
@@ -134,6 +135,16 @@ namespace Stride
                ))
             {
                 data.title = uiState.titleBuffer;
+                uiState.isEditingTitle = false;
+            }
+            // Deactivate edit mode when clicking outside or losing focus
+            if(ImGui::IsItemDeactivated()
+               || (!ImGui::IsItemFocused() && ImGui::IsMouseClicked(ImGuiMouseButton_Left)))
+            {
+                if(strlen(uiState.titleBuffer) > 0)
+                {
+                    data.title = uiState.titleBuffer;
+                }
                 uiState.isEditingTitle = false;
             }
             ImGui::PopStyleColor();
@@ -152,10 +163,32 @@ namespace Stride
         {
             ImGui::RenderText(text_pos, data.title.c_str(), nullptr);
 
-            if(ImGui::IsItemClicked())
+            // Make the header text area interactive for clicking and dragging
+            ImGui::SetCursorScreenPos(text_pos);
+            ImGui::InvisibleButton(
+                (std::string("##headerInteraction") + uiState.uniqueId).c_str(),
+                ImVec2(
+                    width - padding_x - (button_size * 2.0f) - spacing - 5.0f,
+                    ImGui::GetTextLineHeight()
+                )
+            );
+
+            // Enable edit mode only on double-click
+            if(ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
             {
                 uiState.isEditingTitle = true;
                 strcpy_s(uiState.titleBuffer, data.title.c_str());
+            }
+
+            // Enable drag and drop on single click drag
+            if(ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceNoPreviewTooltip))
+            {
+                ListDragDropPayload payload;
+                payload.SetListId(data.id);
+                payload.list_index = listIndex;
+
+                ImGui::SetDragDropPayload("LIST_PAYLOAD", &payload, sizeof(payload));
+                ImGui::EndDragDropSource();
             }
 
             if(ImGui::IsItemHovered())
@@ -550,7 +583,8 @@ namespace Stride
             bool isCurrentCardDragging = false;
             if(payload_active && global_payload->IsDataType("CARD_PAYLOAD"))
             {
-                const Stride::DragDropPayload* d = (const Stride::DragDropPayload*)global_payload->Data;
+                const Stride::DragDropPayload* d
+                    = (const Stride::DragDropPayload*)global_payload->Data;
                 if(d->GetSourceListId() == data.id && d->card_index == (int)i)
                     isCurrentCardDragging = true;
             }
@@ -558,8 +592,7 @@ namespace Stride
                 continue;
 
             // Dropzone between cards
-            std::string dropzone_id
-                = std::string("dropzone_") + data.id + "_" + std::to_string(i);
+            std::string dropzone_id = std::string("dropzone_") + data.id + "_" + std::to_string(i);
             ImGui::InvisibleButton(
                 dropzone_id.c_str(),
                 ImVec2(ImGui::GetContentRegionAvail().x, 1.0f)
@@ -586,9 +619,11 @@ namespace Stride
             {
                 if(payload_active && global_payload->IsDataType("CARD_PAYLOAD"))
                 {
-                    const Stride::DragDropPayload* d = (const Stride::DragDropPayload*)global_payload->Data;
+                    const Stride::DragDropPayload* d
+                        = (const Stride::DragDropPayload*)global_payload->Data;
                     BoardData* boardData = BoardManager::Get().GetActiveBoard();
-                    Card* moving_card = DragDropManager::GetCard(boardData,d->source_list_id, d->card_index);
+                    Card* moving_card
+                        = DragDropManager::GetCard(boardData, d->source_list_id, d->card_index);
                     if(moving_card)
                     {
                         float x_center
@@ -685,7 +720,7 @@ namespace Stride
 
         ImGui::PushStyleColor(ImGuiCol_ChildBg, IM_COL32(0, 0, 0, 0));
 
-        RenderHeader(data, uiState);
+        RenderHeader(data, uiState, listIndex);
 
         float yAfterHeader = ImGui::GetCursorPosY();
         float footerHeight = 60.0f;
@@ -729,4 +764,5 @@ namespace Stride
         ImGui::PopStyleColor(2);
         ImGui::PopStyleVar(3);
     }
+
 }

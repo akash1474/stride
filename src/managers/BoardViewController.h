@@ -106,6 +106,7 @@ namespace Stride
         void RenderNavBar();
         void RenderBoardContent();
         void RenderBoardSwitcher();
+        void RenderStarterPage();
         void RenderCreateBoardPopup();
         void RenderDeleteConfirmPopup();
 

@@ -20,7 +20,7 @@ namespace Stride
         // Main operations - now require board data to be passed in
         static void PerformDropOperation(BoardData* board);
         static void PerformListDropOperation(BoardData* board);
-        static void DrawTooltipOfDraggedItem(const BoardData* board);
+        static void DrawTooltipOfDraggedCard(const BoardData* board);
         static void UpdateDropZone();
         static void UpdateListDropZone();
         

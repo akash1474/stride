@@ -25,7 +25,7 @@ Stride::CardEditorState& BoardManager::GetEditorState(const std::string& listId)
 
 void BoardManager::Setup()
 {
-    CreateSampleData();
+    // CreateSampleData();
 }
 
 void BoardManager::CreateSampleData()

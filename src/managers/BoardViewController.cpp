@@ -3,6 +3,7 @@
 #include "renderers/CardListRenderer.h"
 #include "managers/DragDropManager.h"
 #include "managers/FontManager.h"
+#include "utilities/ColorPalette.h"
 #include "FontAwesome6.h"
 #include "imgui.h"
 #include "imgui_internal.h"
@@ -37,10 +38,6 @@ namespace Stride
 
     void BoardViewController::Render()
     {
-        BoardData* activeBoard = GetActiveBoard();
-        if(!activeBoard)
-            return;
-
         const float dpiScale = FontManager::GetDpiScale();
 
         // Setup main window
@@ -60,13 +57,33 @@ namespace Stride
                 | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoBringToFrontOnFocus
         );
 
+        // Check if repository is empty - show starter page
+        if(mRepository.IsEmpty())
+        {
+            RenderStarterPage();
+            RenderCreateBoardPopup();
+            ImGui::End();
+            ImGui::PopStyleVar(3);
+            ImGui::PopStyleColor();
+            return;
+        }
+
+        BoardData* activeBoard = GetActiveBoard();
+        if(!activeBoard)
+        {
+            ImGui::End();
+            ImGui::PopStyleVar(3);
+            ImGui::PopStyleColor();
+            return;
+        }
+
         RenderNavBar();
         RenderBoardContent();
         RenderCreateBoardPopup();
 
         // Handle drag-drop - pass board data
         FontManager::Push(FontFamily::Regular, FontSize::Regular);
-        DragDropManager::DrawTooltipOfDraggedItem(activeBoard);
+        DragDropManager::DrawTooltipOfDraggedCard(activeBoard);
         DragDropManager::UpdateDropZone();
 
         DragOperation& op = DragDropManager::GetDragOperation();
@@ -196,6 +213,186 @@ namespace Stride
         }
         ImGui::PopStyleColor(3);
         ImGui::PopStyleVar(3);
+    }
+
+    void BoardViewController::RenderStarterPage()
+    {
+        const float dpiScale = FontManager::GetDpiScale();
+        ImGuiViewport* viewport = ImGui::GetMainViewport();
+        ImVec2 windowSize = viewport->Size;
+        
+        // Subtle background glow (draw using foreground draw list to ensure visibility)
+        ImDrawList* drawList = ImGui::GetWindowDrawList();
+        ImVec2 glowCenter = ImVec2(viewport->Pos.x + windowSize.x * 0.5f, viewport->Pos.y + windowSize.y * 0.5f);
+        
+        // Draw multiple circles with decreasing alpha for smooth gradient effect
+        for(int i = 0; i <= 5; ++i)
+        {
+            float radius = (600.0f * dpiScale) * (i / 5.0f);
+            ImU32 alpha = static_cast<ImU32>(10 * (i / 5.0f));
+            drawList->AddCircleFilled(glowCenter, radius, IM_COL32(59, 130, 246, alpha), 64);
+        }
+        
+        // Center content vertically and horizontally
+        float contentWidth = 600.0f * dpiScale;
+        float contentHeight = 200.0f * dpiScale;
+        float startX = (windowSize.x - contentWidth) * 0.5f;
+        float startY = (windowSize.y - contentHeight) * 0.5f;
+        
+        ImGui::SetCursorPos(ImVec2(startX, startY));
+        ImGui::BeginChild("StarterContent", ImVec2(contentWidth, contentHeight), false, ImGuiWindowFlags_NoScrollbar);
+        
+        // App branding - Icon
+        FontManager::Push(FontFamily::Bold, FontSize::Large);
+        float iconSize = ImGui::CalcTextSize(ICON_FA_CHECK).x;
+        float textWidth = ImGui::CalcTextSize("Stride").x;
+        float totalWidth = iconSize + 10.0f * dpiScale + textWidth;
+        float centerX = (contentWidth - totalWidth) * 0.5f;
+        
+        ImGui::SetCursorPosX(centerX);
+        ImGui::PushStyleColor(ImGuiCol_Text, ColorPalette::Blue::Shade500);
+        ImGui::Text(ICON_FA_CHECK);
+        ImGui::PopStyleColor();
+        
+        ImGui::SameLine(0, 10.0f * dpiScale);
+        ImGui::PushStyleColor(ImGuiCol_Text, ColorPalette::Slate::Shade50);
+        ImGui::Text("Stride");
+        ImGui::PopStyleColor();
+        FontManager::Pop();
+        
+        ImGui::Spacing();
+        ImGui::Spacing();
+        
+        // Subtitle
+        FontManager::Push(FontFamily::Regular, FontSize::Regular);
+        const char* subtitle = "Organize your work visually";
+        float subtitleWidth = ImGui::CalcTextSize(subtitle).x;
+        ImGui::SetCursorPosX((contentWidth - subtitleWidth) * 0.5f);
+        ImGui::PushStyleColor(ImGuiCol_Text, ColorPalette::Slate::Shade400);
+        ImGui::Text("%s", subtitle);
+        ImGui::PopStyleColor();
+        FontManager::Pop();
+        
+        ImGui::Spacing();
+        ImGui::Spacing();
+        ImGui::Spacing();
+        
+        // Feature pills
+        FontManager::Push(FontFamily::Regular, FontSize::Small);
+        const char* features[] = {
+            ICON_FA_TABLE_COLUMNS " Boards",
+            ICON_FA_NOTE_STICKY " Cards",
+            ICON_FA_HAND " Drag & Drop"
+        };
+        
+        float totalPillsWidth = 0.0f;
+        float pillSpacing = 8.0f * dpiScale;
+        for(int i = 0; i < 3; ++i)
+        {
+            totalPillsWidth += ImGui::CalcTextSize(features[i]).x + 16.0f * dpiScale;
+            if(i < 2) totalPillsWidth += pillSpacing;
+        }
+        
+        ImGui::SetCursorPosX((contentWidth - totalPillsWidth) * 0.5f);
+        
+        for(int i = 0; i < 3; ++i)
+        {
+            if(i > 0) ImGui::SameLine(0, pillSpacing);
+            
+            ImGui::PushStyleColor(ImGuiCol_Button, ColorPalette::Slate::Shade800);
+            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ColorPalette::Slate::Shade800);
+            ImGui::PushStyleColor(ImGuiCol_ButtonActive, ColorPalette::Slate::Shade800);
+            ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 14.0f * dpiScale);
+            ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(8.0f * dpiScale, 6.0f * dpiScale));
+            
+            ImGui::PushStyleColor(ImGuiCol_Text, ColorPalette::Slate::Shade400);
+            ImGui::Button(features[i]);
+            ImGui::PopStyleColor();
+            
+            ImGui::PopStyleVar(2);
+            ImGui::PopStyleColor(3);
+        }
+        FontManager::Pop();
+        
+        ImGui::Spacing();
+        ImGui::Spacing();
+        ImGui::Spacing();
+        ImGui::Spacing();
+        
+        // Primary action button
+        float buttonWidth = 280.0f * dpiScale;
+        float buttonHeight = 50.0f * dpiScale;
+        ImGui::SetCursorPosX((contentWidth - buttonWidth) * 0.5f);
+        
+        ImGui::PushStyleColor(ImGuiCol_Button, ColorPalette::Blue::Shade500);
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ColorPalette::Blue::Shade600);
+        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ColorPalette::Blue::Shade700);
+        ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 8.0f * dpiScale);
+        
+        FontManager::Push(FontFamily::SemiBold, FontSize::Regular);
+        bool buttonClicked = ImGui::Button(ICON_FA_PLUS "  Create Your First Board", ImVec2(buttonWidth, buttonHeight));
+        FontManager::Pop();
+        
+        ImGui::PopStyleVar();
+        ImGui::PopStyleColor(3);
+        
+        ImGui::Spacing();
+        ImGui::Spacing();
+        
+        // Keyboard shortcut hint
+        FontManager::Push(FontFamily::Regular, FontSize::Small);
+        const char* hintText = "or press ";
+        const char* keyText = "Ctrl+N";
+        const char* hintEnd = " to start";
+        
+        float hintWidth = ImGui::CalcTextSize(hintText).x;
+        float keyWidth = ImGui::CalcTextSize(keyText).x + 16.0f * dpiScale;
+        float endWidth = ImGui::CalcTextSize(hintEnd).x;
+        float totalHintWidth = hintWidth + keyWidth + endWidth;
+        
+        ImGui::SetCursorPosX((contentWidth - totalHintWidth) * 0.5f);
+        
+        ImGui::PushStyleColor(ImGuiCol_Text, ColorPalette::Slate::Shade600);
+        ImGui::Text("%s", hintText);
+        ImGui::PopStyleColor();
+        
+        ImGui::SameLine(0, 0);
+        
+        // Styled keyboard badge
+        ImGui::PushStyleColor(ImGuiCol_Button, ColorPalette::Slate::Shade800);
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ColorPalette::Slate::Shade800);
+        ImGui::PushStyleColor(ImGuiCol_ButtonActive, ColorPalette::Slate::Shade800);
+        ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 4.0f * dpiScale);
+        ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(8.0f * dpiScale, 4.0f * dpiScale));
+        
+        ImGui::PushStyleColor(ImGuiCol_Text, ColorPalette::Slate::Shade300);
+        ImGui::Button(keyText);
+        ImGui::PopStyleColor();
+        
+        ImGui::PopStyleVar(2);
+        ImGui::PopStyleColor(3);
+        
+        ImGui::SameLine(0, 0);
+        
+        ImGui::PushStyleColor(ImGuiCol_Text, ColorPalette::Slate::Shade600);
+        ImGui::Text("%s", hintEnd);
+        ImGui::PopStyleColor();
+        FontManager::Pop();
+        
+        ImGui::EndChild();
+        
+        // Handle keyboard shortcut
+        if(ImGui::IsKeyPressed(ImGuiKey_N) && ImGui::GetIO().KeyCtrl)
+        {
+            buttonClicked = true;
+        }
+        
+        // Open create board dialog
+        if(buttonClicked)
+        {
+            mUIState.isCreatingBoard = true;
+            memset(mUIState.newBoardTitleBuffer, 0, sizeof(mUIState.newBoardTitleBuffer));
+        }
     }
 
     void BoardViewController::RenderBoardContent()

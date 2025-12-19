@@ -9,6 +9,8 @@ namespace Storage
     {
         int id;
         std::string name;
+        std::string description;
+        std::string background_image;
         int64_t created_at;
         int64_t updated_at;
     };

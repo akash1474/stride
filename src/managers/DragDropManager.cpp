@@ -8,7 +8,7 @@
 
 namespace Stride
 {
-    void DragDropManager::DrawTooltipOfDraggedItem(const BoardData* board)
+    void DragDropManager::DrawTooltipOfDraggedCard(const BoardData* board)
     {
         if(!board)
             return;

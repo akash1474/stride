@@ -90,8 +90,8 @@ namespace Stride
         // Create storage object
         Storage::BoardData storageBoard;
         storageBoard.name = title;
-        // storageBoard.description = description;
-        // storageBoard.background_image = backgroundImage;
+        storageBoard.description = description;
+        storageBoard.background_image = backgroundImage;
         storageBoard.created_at = std::time(nullptr);
         storageBoard.updated_at = std::time(nullptr);
 
@@ -102,7 +102,7 @@ namespace Stride
         BoardData board;
         board.id = MakeId(newBoardId, "board");
         board.title = title;
-        // board.description = description;
+        board.description = description;
         board.backgroundImage = backgroundImage;
         board.createdAt = storageBoard.created_at;
         board.updatedAt = storageBoard.updated_at;

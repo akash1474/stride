@@ -17,8 +17,7 @@ namespace Stride
 
     void CardList::InsertCard(Card card, size_t insert_index)
     {
-        if(insert_index >= cards.size())
-        {
+        if(insert_index >= cards.size()) {
             cards.push_back(std::move(card));
         }
         else

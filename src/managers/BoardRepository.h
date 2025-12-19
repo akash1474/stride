@@ -51,9 +51,8 @@ namespace Stride
         void OnBoardDeleted(BoardChangedCallback cb);
         void OnBoardModified(BoardChangedCallback cb);
 
-        // Persistence (placeholder for future implementation)
-        bool SaveToFile(const std::string& path) const;
-        bool LoadFromFile(const std::string& path);
+        // Persistence
+        void LoadAll(); // Load all boards from database
 
       private:
         std::vector<BoardData> mBoards;

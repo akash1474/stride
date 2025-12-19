@@ -10,6 +10,42 @@ namespace Stride
     // HIGH-LEVEL OPERATIONS
     // ============================================================
 
+    std::vector<BoardData> BoardStorageAdapter::LoadAllBoards()
+    {
+        std::vector<BoardData> boards;
+        
+        try
+        {
+            // Get all board metadata from storage
+            auto storageBoards = StorageManager::GetAllBoards();
+            
+            GL_INFO("Loading {} boards from database...", storageBoards.size());
+            
+            // Load each board with full data
+            for(const auto& storageBoard : storageBoards)
+            {
+                try
+                {
+                    BoardData board = LoadFullBoard(storageBoard.id);
+                    boards.push_back(std::move(board));
+                }
+                catch(const std::exception& e)
+                {
+                    GL_ERROR("Failed to load board {}: {}", storageBoard.id, e.what());
+                    // Continue loading other boards even if one fails
+                }
+            }
+            
+            GL_INFO("Successfully loaded {} boards", boards.size());
+        }
+        catch(const std::exception& e)
+        {
+            GL_ERROR("Failed to load boards: {}", e.what());
+        }
+        
+        return boards;
+    }
+
     BoardData BoardStorageAdapter::LoadFullBoard(int boardId)
     {
         try

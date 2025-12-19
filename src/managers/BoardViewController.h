@@ -72,10 +72,20 @@ namespace Stride
      * @note This class does NOT own the repository - it only holds a reference.
      * @see BoardRepository, BoardData, CardListRenderer, DragDropManager
      */
+    enum class ViewMode
+    {
+        Home,  // Show all boards in a grid
+        Board  // Show active board content
+    };
+
     class BoardViewController
     {
       public:
         explicit BoardViewController(BoardRepository& repository);
+
+        // View mode management
+        void SetViewMode(ViewMode mode) { mCurrentViewMode = mode; }
+        ViewMode GetViewMode() const { return mCurrentViewMode; }
 
         // Active board management
         void SetActiveBoard(const std::string& id);
@@ -97,12 +107,15 @@ namespace Stride
         BoardRepository& mRepository;
         std::string mActiveBoardId;
         BoardViewUIState mUIState;
+        ViewMode mCurrentViewMode = ViewMode::Home;
 
         // UI state storage for card lists
         std::unordered_map<std::string, CardListUIState> mListUIStates;
         std::unordered_map<std::string, CardEditorState> mEditorStates;
 
         // Render components
+        void RenderHomePage();
+        void RenderBoardView();
         void RenderNavBar();
         void RenderBoardContent();
         void RenderBoardSwitcher();

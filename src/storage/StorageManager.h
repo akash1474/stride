@@ -1,5 +1,6 @@
 #pragma once
 #include "storage/Storage.h"
+#include "PathManager.h"
 #include <utility>
 #include <vector>
 #include <string>
@@ -130,7 +131,7 @@ class StorageManager
 
     static StorageManager& Get()
     {
-        static StorageManager instance("stride.db");
+        static StorageManager instance(Stride::PathManager::Get().GetDatabaseFile().generic_u8string());
         return instance;
     }
 

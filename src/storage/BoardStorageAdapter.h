@@ -50,6 +50,12 @@ namespace Stride
         // ============================================================
 
         /**
+         * @brief Load all boards with their complete data from database.
+         * @return Vector of all boards with nested lists and cards
+         */
+        static std::vector<BoardData> LoadAllBoards();
+
+        /**
          * @brief Load a complete board with all lists and cards from database.
          * @param boardId Database ID of the board
          * @return Fully populated BoardData with nested lists and cards

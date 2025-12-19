@@ -25,7 +25,10 @@ Stride::CardEditorState& BoardManager::GetEditorState(const std::string& listId)
 
 void BoardManager::Setup()
 {
-    // CreateSampleData();
+    // Load all boards from database
+    mRepository->LoadAll();
+    mViewController->SetViewMode(Stride::ViewMode::Home);
+    // CreateSampleData(); // Uncomment for demo/testing
 }
 
 void BoardManager::CreateSampleData()

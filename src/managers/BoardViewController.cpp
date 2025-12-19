@@ -4,6 +4,7 @@
 #include "managers/DragDropManager.h"
 #include "managers/FontManager.h"
 #include "utilities/ColorPalette.h"
+#include "storage/BoardStorageAdapter.h"
 #include "FontAwesome6.h"
 #include "imgui.h"
 #include "imgui_internal.h"
@@ -17,6 +18,7 @@ namespace Stride
     {
         mActiveBoardId = id;
         mUIState.Reset();
+        mCurrentViewMode = ViewMode::Board;
     }
 
     BoardData* BoardViewController::GetActiveBoard() { return mRepository.GetById(mActiveBoardId); }
@@ -38,8 +40,6 @@ namespace Stride
 
     void BoardViewController::Render()
     {
-        const float dpiScale = FontManager::GetDpiScale();
-
         // Setup main window
         ImGuiViewport* viewport = ImGui::GetMainViewport();
         ImGui::SetNextWindowPos(viewport->Pos);
@@ -68,12 +68,31 @@ namespace Stride
             return;
         }
 
-        BoardData* activeBoard = GetActiveBoard();
-        if(!activeBoard)
+        // Switch between Home and Board views
+        if(mCurrentViewMode == ViewMode::Home)
         {
+            RenderHomePage();
+            RenderCreateBoardPopup();
             ImGui::End();
             ImGui::PopStyleVar(3);
             ImGui::PopStyleColor();
+            return;
+        }
+
+        // Board view
+        RenderBoardView();
+
+        ImGui::End();
+        ImGui::PopStyleVar(3);
+        ImGui::PopStyleColor();
+    }
+
+    void BoardViewController::RenderBoardView()
+    {
+
+        BoardData* activeBoard = GetActiveBoard();
+        if(!activeBoard)
+        {
             return;
         }
 
@@ -92,10 +111,6 @@ namespace Stride
             DragDropManager::PerformDropOperation(activeBoard);
         }
         FontManager::Pop();
-
-        ImGui::End();
-        ImGui::PopStyleVar(3);
-        ImGui::PopStyleColor();
     }
 
     void BoardViewController::RenderNavBar()
@@ -118,7 +133,16 @@ namespace Stride
         FontManager::Push(FontFamily::Bold, FontSize::Regular);
         float centerY = (headerHeight - ImGui::GetTextLineHeight()) * 0.5f;
         ImGui::SetCursorPos(ImVec2(15.0f * dpiScale, centerY));
-        ImGui::TextColored(ImVec4(1.0f, 1.0f, 1.0f, 0.9f), ICON_FA_CHECK " Stride");
+        
+        // Home button
+        ImGui::PushStyleColor(ImGuiCol_Button, IM_COL32(0, 0, 0, 0));
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, IM_COL32(255, 255, 255, 20));
+        ImGui::PushStyleColor(ImGuiCol_ButtonActive, IM_COL32(255, 255, 255, 40));
+        if(ImGui::Button(ICON_FA_CHECK " Stride"))
+        {
+            mCurrentViewMode = ViewMode::Home;
+        }
+        ImGui::PopStyleColor(3);
 
         float logoWidth = ImGui::GetItemRectSize().x;
         float spacing = 5.0f * dpiScale;
@@ -393,6 +417,145 @@ namespace Stride
             mUIState.isCreatingBoard = true;
             memset(mUIState.newBoardTitleBuffer, 0, sizeof(mUIState.newBoardTitleBuffer));
         }
+    }
+
+    void BoardViewController::RenderHomePage()
+    {
+        const float dpiScale = FontManager::GetDpiScale();
+        ImGuiViewport* viewport = ImGui::GetMainViewport();
+        ImVec2 windowSize = viewport->Size;
+        
+        // Header with app branding
+        ImGui::PushStyleColor(ImGuiCol_ChildBg, IM_COL32(0, 0, 0, 0));
+        ImGui::BeginChild("HomeHeader", ImVec2(0, 80.0f * dpiScale), false, ImGuiWindowFlags_NoScrollbar);
+        
+        FontManager::Push(FontFamily::Bold, FontSize::Large);
+        float centerY = (80.0f * dpiScale - ImGui::GetTextLineHeight()) * 0.5f;
+        ImGui::SetCursorPos(ImVec2(40.0f * dpiScale, centerY));
+        ImGui::PushStyleColor(ImGuiCol_Text, ColorPalette::Blue::Shade500);
+        ImGui::Text(ICON_FA_CHECK);
+        ImGui::PopStyleColor();
+        
+        ImGui::SameLine(0, 10.0f * dpiScale);
+        ImGui::PushStyleColor(ImGuiCol_Text, ColorPalette::Slate::Shade50);
+        ImGui::Text("Stride");
+        ImGui::PopStyleColor();
+        
+        ImGui::SameLine(0, 30.0f * dpiScale);
+        FontManager::Pop();
+        FontManager::Push(FontFamily::Regular, FontSize::Regular);
+        ImGui::PushStyleColor(ImGuiCol_Text, ColorPalette::Slate::Shade400);
+        ImGui::SetCursorPosY(centerY + 5.0f * dpiScale);
+        ImGui::Text("Your Boards");
+        ImGui::PopStyleColor();
+        FontManager::Pop();
+        
+        ImGui::EndChild();
+        ImGui::PopStyleColor();
+        
+        // Board grid content
+        ImGui::BeginChild("HomeBoardGrid", ImVec2(0, 0), false);
+        
+        const auto& boards = mRepository.GetAll();
+        float cardWidth = 280.0f * dpiScale;
+        float cardHeight = 120.0f * dpiScale;
+        float spacing = 20.0f * dpiScale;
+        float startX = 40.0f * dpiScale;
+        float startY = 20.0f * dpiScale;
+        
+        int columns = std::max(1, (int)((windowSize.x - 80.0f * dpiScale) / (cardWidth + spacing)));
+        
+        ImGui::SetCursorPos(ImVec2(startX, startY));
+        
+        int col = 0;
+        int row = 0;
+        for(const auto& board : boards)
+        {
+            if(col > 0)
+            {
+                ImGui::SameLine(0, spacing);
+            }
+            
+            ImGui::BeginGroup();
+            
+            // Board card
+            ImGui::PushStyleColor(ImGuiCol_Button, ColorPalette::Slate::Shade800);
+            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ColorPalette::Slate::Shade700);
+            ImGui::PushStyleColor(ImGuiCol_ButtonActive, ColorPalette::Slate::Shade600);
+            ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 8.0f * dpiScale);
+            ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0, 0));
+            
+            if(ImGui::Button(("##board_" + board.id).c_str(), ImVec2(cardWidth, cardHeight)))
+            {
+                SetActiveBoard(board.id);
+            }
+            
+            ImGui::PopStyleVar(2);
+            ImGui::PopStyleColor(3);
+            
+            // Card content overlay
+            ImVec2 cardMin = ImGui::GetItemRectMin();
+            ImVec2 cardMax = ImGui::GetItemRectMax();
+            
+            ImGui::SetCursorScreenPos(ImVec2(cardMin.x + 16.0f * dpiScale, cardMin.y + 16.0f * dpiScale));
+            ImGui::BeginGroup();
+            
+            // Board title
+            FontManager::Push(FontFamily::SemiBold, FontSize::Regular);
+            ImGui::PushStyleColor(ImGuiCol_Text, ColorPalette::Slate::Shade50);
+            ImGui::Text("%s", board.title.c_str());
+            ImGui::PopStyleColor();
+            FontManager::Pop();
+            
+            ImGui::Spacing();
+            
+            // Board stats
+            FontManager::Push(FontFamily::Regular, FontSize::Small);
+            ImGui::PushStyleColor(ImGuiCol_Text, ColorPalette::Slate::Shade400);
+            ImGui::Text("%zu lists, %zu cards", board.lists.size(), board.GetTotalCardCount());
+            ImGui::PopStyleColor();
+            FontManager::Pop();
+            
+            ImGui::EndGroup();
+            ImGui::EndGroup();
+            
+            col++;
+            if(col >= columns)
+            {
+                col = 0;
+                row++;
+                ImGui::SetCursorPos(ImVec2(startX, startY + (row * (cardHeight + spacing))));
+            }
+        }
+        
+        // Create new board card
+        if(col > 0)
+        {
+            ImGui::SameLine(0, spacing);
+        }
+        else
+        {
+            // If starting a new row for the create button
+            ImGui::SetCursorPos(ImVec2(startX, startY + (row * (cardHeight + spacing))));
+        }
+        
+        ImGui::PushStyleColor(ImGuiCol_Button, IM_COL32(255, 255, 255, 20));
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, IM_COL32(255, 255, 255, 40));
+        ImGui::PushStyleColor(ImGuiCol_ButtonActive, IM_COL32(255, 255, 255, 60));
+        ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 8.0f * dpiScale);
+        
+        FontManager::Push(FontFamily::Regular, FontSize::Regular);
+        if(ImGui::Button(ICON_FA_PLUS "  Create New Board", ImVec2(cardWidth, cardHeight)))
+        {
+            mUIState.isCreatingBoard = true;
+            memset(mUIState.newBoardTitleBuffer, 0, sizeof(mUIState.newBoardTitleBuffer));
+        }
+        FontManager::Pop();
+        
+        ImGui::PopStyleVar();
+        ImGui::PopStyleColor(3);
+        
+        ImGui::EndChild();
     }
 
     void BoardViewController::RenderBoardContent()
@@ -681,7 +844,14 @@ namespace Stride
     {
         if(auto* board = GetActiveBoard())
         {
-            board->AddList(title);
+            // Get the position for the new list (append to end)
+            int position = static_cast<int>(board->lists.size());
+            
+            // Create the list in the database and get back a list with DB-generated ID
+            CardList newList = BoardStorageAdapter::CreateList(board->id, title, position);
+            
+            // Add the list to the board's in-memory collection
+            board->lists.push_back(std::move(newList));
         }
     }
 

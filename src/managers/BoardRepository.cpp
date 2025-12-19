@@ -2,13 +2,16 @@
 #include "BoardRepository.h"
 #include "Utils.h"
 #include <algorithm>
+#include "storage/BoardStorageAdapter.h"
+#include "Log.h"
 
 namespace Stride
 {
     BoardData& BoardRepository::Create(const std::string& title)
     {
-        std::string id = GenerateId();
-        mBoards.emplace_back(id, title);
+        BoardData tBoardData = BoardStorageAdapter::CreateBoard(title);
+        const std::string id = tBoardData.id;
+        mBoards.emplace_back(std::move(tBoardData));
         NotifyCreated(id);
         return mBoards.back();
     }
@@ -90,15 +93,29 @@ namespace Stride
         }
     }
     
-    bool BoardRepository::SaveToFile(const std::string& path) const
+    void BoardRepository::LoadAll()
     {
-        // TODO: Implement persistence
-        return false;
-    }
-    
-    bool BoardRepository::LoadFromFile(const std::string& path)
-    {
-        // TODO: Implement persistence
-        return false;
+        GL_INFO("Loading all boards from database...");
+        
+        try
+        {
+            // Load all boards from storage
+            std::vector<BoardData> loadedBoards = BoardStorageAdapter::LoadAllBoards();
+            
+            // Clear existing boards and replace with loaded ones
+            mBoards = std::move(loadedBoards);
+            
+            GL_INFO("Successfully loaded {} boards into repository", mBoards.size());
+            
+            // Notify observers for each loaded board
+            for(const auto& board : mBoards)
+            {
+                NotifyCreated(board.id);
+            }
+        }
+        catch(const std::exception& e)
+        {
+            GL_ERROR("Failed to load boards: {}", e.what());
+        }
     }
 }
